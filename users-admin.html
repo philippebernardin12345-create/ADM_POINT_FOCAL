@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Utilisateurs - Point Focal Admin</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #0b0e11;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            padding-bottom: 90px;
+        }
+
+        .header {
+            background: #1e2329;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #2b3139;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #f0b90b;
+        }
+
+        .search-box {
+            padding: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #1e2329;
+            color: white;
+        }
+
+        .users-container {
+            padding: 0 20px;
+        }
+
+        .user-card {
+            background: #1e2329;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+        }
+
+        .user-name {
+            color: #f0b90b;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            color: #c5c5c5;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: rgba(0, 255, 120, 0.15);
+            color: #4cff8a;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .suspend {
+            background: #ff9900;
+            color: white;
+        }
+
+        .delete {
+            background: #d83a3a;
+            color: white;
+        }
+
+        .menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e2329;
+            border-top: 1px solid #2b3139;
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .menu a {
+            padding: 15px 5px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-size: 13px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+
+        <h1>
+            Utilisateurs
+        </h1>
+
+        <p>
+            Gestion des membres Point Focal
+        </p>
+
+    </div>
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            placeholder="Rechercher un utilisateur..."
+        >
+
+    </div>
+
+    <div class="users-container">
+
+        <div class="user-card">
+
+            <div class="user-name">
+                Jean Dupont
+            </div>
+
+            <div class="user-info">
+                📧 jean@email.com
+            </div>
+
+            <div class="user-info">
+                📱 +243 999 999 999
+            </div>
+
+            <div class="user-info">
+                👥 2 filleuls
+            </div>
+
+            <div class="status">
+                Actif
+            </div>
+
+            <div class="actions">
+
+                <button class="suspend">
+                    Suspendre
+                </button>
+
+                <button class="delete">
+                    Supprimer
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="menu">
+
+        <a href="dashboard-admin.html">
+            📊<br>
+            Tableau
+        </a>
+
+        <a href="#">
+            👥<br>
+            Utilisateurs
+        </a>
+
+        <a href="opportunities-admin.html">
+            🎯<br>
+            Opportunités
+        </a>
+
+        <a href="settings-admin.html">
+            ⚙️<br>
+            Paramètres
+        </a>
+
+    </div>
+
+</body>
+</html>
