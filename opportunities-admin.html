@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Opportunités - Point Focal Admin</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #0b0e11;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding-bottom: 90px;
+        }
+
+        .header {
+            background: #1e2329;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #2b3139;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #f0b90b;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .card {
+            background: #1e2329;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .title {
+            color: #f0b90b;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .info {
+            color: #b7bdc6;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: rgba(0, 255, 120, 0.15);
+            color: #4cff8a;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .edit {
+            background: #f0b90b;
+            color: black;
+        }
+
+        .disable {
+            background: #d83a3a;
+            color: white;
+        }
+
+        .add-button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #f0b90b;
+            color: black;
+            font-weight: bold;
+        }
+
+        .menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e2329;
+            border-top: 1px solid #2b3139;
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .menu a {
+            padding: 15px 5px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-size: 13px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+
+        <h1>
+            Opportunités
+        </h1>
+
+        <p>
+            Gestion des opportunités Point Focal
+        </p>
+
+    </div>
+
+    <div class="container">
+
+        <div class="card">
+
+            <div class="title">
+                Victory Automatic
+            </div>
+
+            <div class="info">
+                Position : 1
+            </div>
+
+            <div class="info">
+                Vidéo obligatoire : Oui
+            </div>
+
+            <div class="badge">
+                Active
+            </div>
+
+            <div class="actions">
+
+                <button class="edit">
+                    Modifier
+                </button>
+
+                <button class="disable">
+                    Désactiver
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div class="title">
+                Victory World
+            </div>
+
+            <div class="info">
+                Position : 2
+            </div>
+
+            <div class="info">
+                Vidéo obligatoire : Non
+            </div>
+
+            <div class="badge">
+                Active
+            </div>
+
+            <div class="actions">
+
+                <button class="edit">
+                    Modifier
+                </button>
+
+                <button class="disable">
+                    Désactiver
+                </button>
+
+            </div>
+
+        </div>
+
+        <button class="add-button">
+            + Ajouter une opportunité
+        </button>
+
+    </div>
+
+    <div class="menu">
+
+        <a href="dashboard-admin.html">
+            📊<br>
+            Tableau
+        </a>
+
+        <a href="users-admin.html">
+            👥<br>
+            Utilisateurs
+        </a>
+
+        <a href="#">
+            🎯<br>
+            Opportunités
+        </a>
+
+        <a href="settings-admin.html">
+            ⚙️<br>
+            Paramètres
+        </a>
+
+    </div>
+
+</body>
+
+</html>
