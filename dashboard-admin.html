@@ -22,6 +22,7 @@
             background: #0b0e11;
             color: #ffffff;
             font-family: Arial, sans-serif;
+            padding-bottom: 90px;
         }
 
         .header {
@@ -61,6 +62,12 @@
             font-size: 30px;
             font-weight: bold;
             margin-top: 10px;
+        }
+
+        .status-message {
+            padding: 0 20px;
+            text-align: center;
+            color: #b7bdc6;
         }
 
         .menu {
@@ -113,7 +120,10 @@
                 Utilisateurs
             </h3>
 
-            <div class="number">
+            <div
+                class="number"
+                id="usersCount"
+            >
                 0
             </div>
 
@@ -125,7 +135,10 @@
                 Leaders
             </h3>
 
-            <div class="number">
+            <div
+                class="number"
+                id="leadersCount"
+            >
                 0 / 50
             </div>
 
@@ -137,7 +150,10 @@
                 Paiements
             </h3>
 
-            <div class="number">
+            <div
+                class="number"
+                id="paymentsCount"
+            >
                 0
             </div>
 
@@ -149,12 +165,22 @@
                 Opportunités
             </h3>
 
-            <div class="number">
-                2
+            <div
+                class="number"
+                id="opportunitiesCount"
+            >
+                0
             </div>
 
         </div>
 
+    </div>
+
+    <div
+        class="status-message"
+        id="statusMessage"
+    >
+        Chargement des statistiques...
     </div>
 
     <div class="menu">
@@ -180,6 +206,77 @@
         </a>
 
     </div>
+
+    <script>
+
+        const API_URL =
+            "https://point-focal.onrender.com/api";
+
+        async function loadDashboardStats() {
+
+            const statusMessage =
+                document.getElementById(
+                    "statusMessage"
+                );
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/admin/dashboard`
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.message
+                        || "Impossible de charger les statistiques."
+                    );
+                }
+
+                document.getElementById(
+                    "usersCount"
+                ).textContent =
+                    data.users || 0;
+
+                document.getElementById(
+                    "leadersCount"
+                ).textContent =
+                    `${data.leaders || 0} / 50`;
+
+                document.getElementById(
+                    "paymentsCount"
+                ).textContent =
+                    data.payments || 0;
+
+                document.getElementById(
+                    "opportunitiesCount"
+                ).textContent =
+                    data.opportunities || 0;
+
+                statusMessage.textContent =
+                    "Statistiques mises à jour.";
+
+                statusMessage.style.color =
+                    "#4cff8a";
+
+            } catch (error) {
+
+                statusMessage.textContent =
+                    error.message;
+
+                statusMessage.style.color =
+                    "#ff6b6b";
+
+            }
+
+        }
+
+        loadDashboardStats();
+
+    </script>
 
 </body>
 </html>
