@@ -37,8 +37,19 @@
             color: #f0b90b;
         }
 
+        .header p {
+            margin-bottom: 0;
+            color: #b7bdc6;
+        }
+
+        .summary {
+            padding: 15px 20px 0;
+            color: #b7bdc6;
+            font-size: 14px;
+        }
+
         .search-box {
-            padding: 20px;
+            padding: 15px 20px 20px;
         }
 
         .search-box input {
@@ -48,6 +59,11 @@
             border-radius: 8px;
             background: #1e2329;
             color: white;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #f0b90b;
         }
 
         .users-container {
@@ -59,24 +75,27 @@
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 15px;
+            border: 1px solid #2b3139;
         }
 
         .user-name {
             color: #f0b90b;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 10px;
+            overflow-wrap: anywhere;
         }
 
         .user-info {
             color: #c5c5c5;
             font-size: 14px;
-            margin-bottom: 6px;
+            margin-bottom: 7px;
+            overflow-wrap: anywhere;
         }
 
         .status {
             display: inline-block;
-            margin-top: 10px;
+            margin-top: 8px;
             padding: 5px 10px;
             border-radius: 20px;
             background: rgba(0, 255, 120, 0.15);
@@ -84,29 +103,22 @@
             font-size: 13px;
         }
 
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
+        .status.leader {
+            background: rgba(240, 185, 11, 0.15);
+            color: #f0b90b;
         }
 
-        .actions button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
+        .message {
+            background: #1e2329;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: #b7bdc6;
+            border: 1px solid #2b3139;
         }
 
-        .suspend {
-            background: #ff9900;
-            color: white;
-        }
-
-        .delete {
-            background: #d83a3a;
-            color: white;
+        .error {
+            color: #ff6b6b;
         }
 
         .menu {
@@ -116,7 +128,6 @@
             width: 100%;
             background: #1e2329;
             border-top: 1px solid #2b3139;
-
             display: grid;
             grid-template-columns: repeat(4, 1fr);
         }
@@ -127,6 +138,10 @@
             text-decoration: none;
             color: white;
             font-size: 13px;
+        }
+
+        .menu a.active {
+            color: #f0b90b;
         }
 
     </style>
@@ -147,51 +162,30 @@
 
     </div>
 
+    <div
+        class="summary"
+        id="usersSummary"
+    >
+        Chargement des utilisateurs...
+    </div>
+
     <div class="search-box">
 
         <input
-            type="text"
-            placeholder="Rechercher un utilisateur..."
+            type="search"
+            id="searchInput"
+            placeholder="Rechercher par email ou WhatsApp..."
         >
 
     </div>
 
-    <div class="users-container">
+    <div
+        class="users-container"
+        id="usersContainer"
+    >
 
-        <div class="user-card">
-
-            <div class="user-name">
-                Jean Dupont
-            </div>
-
-            <div class="user-info">
-                📧 jean@email.com
-            </div>
-
-            <div class="user-info">
-                📱 +243 999 999 999
-            </div>
-
-            <div class="user-info">
-                👥 2 filleuls
-            </div>
-
-            <div class="status">
-                Actif
-            </div>
-
-            <div class="actions">
-
-                <button class="suspend">
-                    Suspendre
-                </button>
-
-                <button class="delete">
-                    Supprimer
-                </button>
-
-            </div>
-
+        <div class="message">
+            Chargement...
         </div>
 
     </div>
@@ -203,7 +197,10 @@
             Tableau
         </a>
 
-        <a href="#">
+        <a
+            href="users-admin.html"
+            class="active"
+        >
             👥<br>
             Utilisateurs
         </a>
@@ -219,6 +216,208 @@
         </a>
 
     </div>
+
+    <script src="admin.js"></script>
+
+    <script>
+
+        let allUsers = [];
+
+        function escapeHtml(value) {
+            return String(value || "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function formatDate(dateValue) {
+            if (!dateValue) {
+                return "Date inconnue";
+            }
+
+            const date = new Date(dateValue);
+
+            if (Number.isNaN(date.getTime())) {
+                return "Date inconnue";
+            }
+
+            return date.toLocaleString(
+                "fr-FR",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+        }
+
+        function renderUsers(users) {
+            const container =
+                document.getElementById(
+                    "usersContainer"
+                );
+
+            const summary =
+                document.getElementById(
+                    "usersSummary"
+                );
+
+            summary.textContent =
+                `${users.length} utilisateur(s) affiché(s)`;
+
+            if (!users.length) {
+                container.innerHTML = `
+                    <div class="message">
+                        Aucun utilisateur trouvé.
+                    </div>
+                `;
+
+                return;
+            }
+
+            container.innerHTML =
+                users.map((user) => {
+
+                    const email =
+                        escapeHtml(user.email);
+
+                    const whatsapp =
+                        escapeHtml(
+                            user.whatsapp || "Non renseigné"
+                        );
+
+                    const userId =
+                        escapeHtml(user.id);
+
+                    const createdAt =
+                        formatDate(user.created_at);
+
+                    const isLeader =
+                        Boolean(user.is_leader);
+
+                    return `
+                        <div class="user-card">
+
+                            <div class="user-name">
+                                ${email}
+                            </div>
+
+                            <div class="user-info">
+                                📱 WhatsApp :
+                                ${whatsapp}
+                            </div>
+
+                            <div class="user-info">
+                                🆔 Identifiant :
+                                ${userId}
+                            </div>
+
+                            <div class="user-info">
+                                📅 Inscrit le :
+                                ${createdAt}
+                            </div>
+
+                            <div class="status ${isLeader ? "leader" : ""}">
+                                ${isLeader ? "Leader" : "Membre"}
+                            </div>
+
+                        </div>
+                    `;
+                }).join("");
+        }
+
+        function filterUsers() {
+            const searchValue =
+                document.getElementById(
+                    "searchInput"
+                )
+                .value
+                .trim()
+                .toLowerCase();
+
+            if (!searchValue) {
+                renderUsers(allUsers);
+                return;
+            }
+
+            const filteredUsers =
+                allUsers.filter((user) => {
+
+                    const email =
+                        String(user.email || "")
+                        .toLowerCase();
+
+                    const whatsapp =
+                        String(user.whatsapp || "")
+                        .toLowerCase();
+
+                    const id =
+                        String(user.id || "")
+                        .toLowerCase();
+
+                    return (
+                        email.includes(searchValue) ||
+                        whatsapp.includes(searchValue) ||
+                        id.includes(searchValue)
+                    );
+                });
+
+            renderUsers(filteredUsers);
+        }
+
+        async function loadUsers() {
+            const container =
+                document.getElementById(
+                    "usersContainer"
+                );
+
+            try {
+
+                const users =
+                    await adminApiCall(
+                        "/admin/users"
+                    );
+
+                allUsers =
+                    Array.isArray(users)
+                    ? users
+                    : [];
+
+                renderUsers(allUsers);
+
+            } catch (error) {
+
+                container.innerHTML = `
+                    <div class="message error">
+                        ${escapeHtml(
+                            error.message ||
+                            "Impossible de charger les utilisateurs."
+                        )}
+                    </div>
+                `;
+
+                document.getElementById(
+                    "usersSummary"
+                ).textContent =
+                    "Erreur de chargement";
+            }
+        }
+
+        document.getElementById(
+            "searchInput"
+        ).addEventListener(
+            "input",
+            filterUsers
+        );
+
+        protectAdminPage();
+        loadUsers();
+
+    </script>
 
 </body>
 </html>
