@@ -65,10 +65,21 @@
             cursor: pointer;
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .message {
             margin-top: 18px;
             text-align: center;
             color: #9aa4af;
+        }
+
+        .login-message {
+            margin-top: 15px;
+            text-align: center;
+            min-height: 20px;
         }
 
     </style>
@@ -84,24 +95,177 @@
         </h2>
 
         <input
+            id="adminEmail"
             type="email"
             placeholder="Email administrateur"
+            autocomplete="email"
         >
 
         <input
+            id="adminPassword"
             type="password"
             placeholder="Mot de passe"
+            autocomplete="current-password"
         >
 
-        <button>
+        <button id="loginButton">
             Se connecter
         </button>
+
+        <div
+            id="loginMessage"
+            class="login-message"
+        ></div>
 
         <div class="message">
             Tableau de bord Point Focal Admin V1
         </div>
 
     </div>
+
+    <script src="admin.js"></script>
+
+    <script>
+
+        const button =
+            document.getElementById(
+                "loginButton"
+            );
+
+        const emailInput =
+            document.getElementById(
+                "adminEmail"
+            );
+
+        const passwordInput =
+            document.getElementById(
+                "adminPassword"
+            );
+
+        const message =
+            document.getElementById(
+                "loginMessage"
+            );
+
+
+        button.addEventListener(
+            "click",
+            loginAdmin
+        );
+
+
+        passwordInput.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Enter") {
+                    loginAdmin();
+                }
+
+            }
+        );
+
+
+        async function loginAdmin() {
+
+            const email =
+                emailInput.value
+                    .trim()
+                    .toLowerCase();
+
+            const password =
+                passwordInput.value;
+
+
+            if (!email || !password) {
+
+                showAdminMessage(
+                    message,
+                    "Entre ton email et ton mot de passe."
+                );
+
+                return;
+            }
+
+
+            try {
+
+                button.disabled = true;
+
+                button.textContent =
+                    "Connexion...";
+
+                message.textContent = "";
+
+
+                const data =
+                    await adminApiCall(
+                        "/admin/login",
+                        {
+                            method: "POST",
+
+                            body: JSON.stringify({
+                                email,
+                                password
+                            })
+                        }
+                    );
+
+
+                const token =
+                    data.token
+                    || data.accessToken
+                    || data.access_token
+                    || data.data?.token;
+
+
+                const user =
+                    data.user
+                    || data.admin
+                    || data.data?.user
+                    || data.data?.admin;
+
+
+                if (!token) {
+                    throw new Error(
+                        "Le backend n'a retourné aucun token."
+                    );
+                }
+
+
+                saveAdminToken(token);
+
+                if (user) {
+                    saveAdminUser(user);
+                }
+
+
+                window.location.href =
+                    "dashboard-admin.html";
+
+            }
+
+            catch (error) {
+
+                showAdminMessage(
+                    message,
+                    error.message
+                );
+
+            }
+
+            finally {
+
+                button.disabled = false;
+
+                button.textContent =
+                    "Se connecter";
+
+            }
+
+        }
+
+    </script>
 
 </body>
 </html>
