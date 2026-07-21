@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Dashboard Admin - Point Focal</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #0b0e11;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            background: #1e2329;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #2b3139;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #f0b90b;
+        }
+
+        .grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
+            gap: 15px;
+        }
+
+        .card {
+            background: #1e2329;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #f0b90b;
+        }
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .menu {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e2329;
+            border-top: 1px solid #2b3139;
+
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .menu a {
+            padding: 15px 5px;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 13px;
+        }
+
+        .menu a:hover {
+            background: #2b3139;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+
+        <h1>
+            Dashboard Admin
+        </h1>
+
+        <p>
+            Administration générale de Point Focal
+        </p>
+
+    </div>
+
+    <div class="grid">
+
+        <div class="card">
+
+            <h3>
+                Utilisateurs
+            </h3>
+
+            <div class="number">
+                0
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>
+                Leaders
+            </h3>
+
+            <div class="number">
+                0 / 50
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>
+                Paiements
+            </h3>
+
+            <div class="number">
+                0
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h3>
+                Opportunités
+            </h3>
+
+            <div class="number">
+                2
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="menu">
+
+        <a href="#">
+            📊<br>
+            Tableau
+        </a>
+
+        <a href="users-admin.html">
+            👥<br>
+            Utilisateurs
+        </a>
+
+        <a href="opportunities-admin.html">
+            🎯<br>
+            Opportunités
+        </a>
+
+        <a href="settings-admin.html">
+            ⚙️<br>
+            Paramètres
+        </a>
+
+    </div>
+
+</body>
+</html>
