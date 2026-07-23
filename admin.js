@@ -115,29 +115,30 @@ async function adminApiCall(
 
     let response;
 
-    try {
+try {
 
-        response = await fetch(
-            `${ADMIN_CONFIG.API_URL}${endpoint}`,
-            {
-                ...options,
-                headers
-            }
-        );
+    response = await fetch(
+        `${ADMIN_CONFIG.API_URL}${endpoint}`,
+        {
+            ...options,
+            headers
+        }
+    );
 
-    } catch (error) {
+} catch (error) {
 
-        console.error(
-            "Erreur réseau :",
-            error
-        );
+    console.error(
+        "Erreur réseau :",
+        error
+    );
 
-        
-throw new Error(
-    error.message || String(error)
-);
+    throw new Error(
+        error.message ||
+        String(error)
+    );
+}
 
-    let data = {};
+let data = {};
 
     const responseText =
         await response.text();
