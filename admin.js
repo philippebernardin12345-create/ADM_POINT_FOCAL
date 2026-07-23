@@ -132,11 +132,10 @@ async function adminApiCall(
             error
         );
 
-        throw new Error(
-            "Impossible de contacter le serveur. Vérifie ta connexion ou attends le démarrage de Render."
-        );
-    }
-
+        
+throw new Error(
+    error.message || String(error)
+);
 
     let data = {};
 
