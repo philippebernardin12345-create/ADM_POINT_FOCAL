@@ -1,271 +1,278 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
+// ============================================================
+// POINT FOCAL ADMIN V1
+// ============================================================
 
-    <meta charset="UTF-8">
+const ADMIN_CONFIG = {
+    API_URL:
+        "https://point-focal-backend.onrender.com/api",
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    TOKEN_KEY:
+        "point_focal_admin_token",
 
-    <title>Connexion administrateur</title>
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            background: #0b0e11;
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 420px;
-            background: #1e2329;
-            padding: 30px;
-            border-radius: 14px;
-        }
-
-        h2 {
-            text-align: center;
-            color: #f0b90b;
-            margin-top: 0;
-            margin-bottom: 25px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-            border-radius: 8px;
-            background: #111418;
-            color: white;
-        }
-
-        button {
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 8px;
-            background: #f0b90b;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .message {
-            margin-top: 18px;
-            text-align: center;
-            color: #9aa4af;
-        }
-
-        .login-message {
-            margin-top: 15px;
-            text-align: center;
-            min-height: 20px;
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-    <div class="card">
-
-        <h2>
-            Connexion administrateur
-        </h2>
-
-        <input
-            id="adminEmail"
-            type="email"
-            placeholder="Email administrateur"
-            autocomplete="email"
-        >
-
-        <input
-            id="adminPassword"
-            type="password"
-            placeholder="Mot de passe"
-            autocomplete="current-password"
-        >
-
-        <button id="loginButton">
-            Se connecter
-        </button>
-
-        <div
-            id="loginMessage"
-            class="login-message"
-        ></div>
-
-        <div class="message">
-            Tableau de bord Point Focal Admin V1
-        </div>
-
-    </div>
-
-    <script src="admin.js"></script>
-
-    <script>
-
-        const button =
-            document.getElementById(
-                "loginButton"
-            );
-
-        const emailInput =
-            document.getElementById(
-                "adminEmail"
-            );
-
-        const passwordInput =
-            document.getElementById(
-                "adminPassword"
-            );
-
-        const message =
-            document.getElementById(
-                "loginMessage"
-            );
+    USER_KEY:
+        "point_focal_admin_user"
+};
 
 
-        button.addEventListener(
-            "click",
-            loginAdmin
+// ============================================================
+// TOKEN
+// ============================================================
+
+function getAdminToken() {
+
+    return localStorage.getItem(
+        ADMIN_CONFIG.TOKEN_KEY
+    );
+}
+
+
+function saveAdminToken(token) {
+
+    localStorage.setItem(
+        ADMIN_CONFIG.TOKEN_KEY,
+        token
+    );
+}
+
+
+function removeAdminToken() {
+
+    localStorage.removeItem(
+        ADMIN_CONFIG.TOKEN_KEY
+    );
+}
+
+
+// ============================================================
+// ADMINISTRATEUR
+// ============================================================
+
+function getAdminUser() {
+
+    const savedUser =
+        localStorage.getItem(
+            ADMIN_CONFIG.USER_KEY
         );
 
+    if (!savedUser) {
+        return null;
+    }
 
-        passwordInput.addEventListener(
-            "keydown",
-            function (event) {
+    try {
 
-                if (event.key === "Enter") {
-                    loginAdmin();
-                }
+        return JSON.parse(
+            savedUser
+        );
 
+    } catch (error) {
+
+        console.error(
+            "Utilisateur administrateur invalide :",
+            error
+        );
+
+        return null;
+    }
+}
+
+
+function saveAdminUser(user) {
+
+    localStorage.setItem(
+        ADMIN_CONFIG.USER_KEY,
+        JSON.stringify(user)
+    );
+}
+
+
+function removeAdminUser() {
+
+    localStorage.removeItem(
+        ADMIN_CONFIG.USER_KEY
+    );
+}
+
+
+// ============================================================
+// APPELS API
+// ============================================================
+
+async function adminApiCall(
+    endpoint,
+    options = {}
+) {
+
+    const token =
+        getAdminToken();
+
+    const headers = {
+        "Content-Type":
+            "application/json",
+
+        ...(options.headers || {})
+    };
+
+
+    if (token) {
+
+        headers.Authorization =
+            `Bearer ${token}`;
+    }
+
+
+    let response;
+
+    try {
+
+        response = await fetch(
+            `${ADMIN_CONFIG.API_URL}${endpoint}`,
+            {
+                ...options,
+                headers
             }
         );
 
+    } catch (error) {
 
-        async function loginAdmin() {
+        console.error(
+            "Erreur réseau :",
+            error
+        );
 
-            const email =
-                emailInput.value
-                    .trim()
-                    .toLowerCase();
-
-            const password =
-                passwordInput.value;
-
-
-            if (!email || !password) {
-
-                showAdminMessage(
-                    message,
-                    "Entre ton email et ton mot de passe."
-                );
-
-                return;
-            }
+        throw new Error(
+            "Impossible de contacter le serveur. Vérifie ta connexion ou attends le démarrage de Render."
+        );
+    }
 
 
-            try {
+    let data = {};
 
-                button.disabled = true;
-
-                button.textContent =
-                    "Connexion...";
-
-                message.textContent = "";
+    const responseText =
+        await response.text();
 
 
-                const data =
-                    await adminApiCall(
-                        "/admin/login",
-                        {
-                            method: "POST",
+    if (responseText) {
 
-                            body: JSON.stringify({
-                                email,
-                                password
-                            })
-                        }
-                    );
+        try {
 
+            data =
+                JSON.parse(responseText);
 
-                const token =
-                    data.token
-                    || data.accessToken
-                    || data.access_token
-                    || data.data?.token;
+        } catch (error) {
 
+            console.error(
+                "Réponse non JSON :",
+                responseText
+            );
 
-                const user =
-                    data.user
-                    || data.admin
-                    || data.data?.user
-                    || data.data?.admin;
-
-
-                if (!token) {
-                    throw new Error(
-                        "Le backend n'a retourné aucun token."
-                    );
-                }
-
-
-                saveAdminToken(token);
-
-                if (user) {
-                    saveAdminUser(user);
-                }
-
-
-                window.location.href =
-                    "dashboard-admin.html";
-
-            }
-
-            catch (error) {
-
-                showAdminMessage(
-                    message,
-                    error.message
-                );
-
-            }
-
-            finally {
-
-                button.disabled = false;
-
-                button.textContent =
-                    "Se connecter";
-
-            }
-
+            throw new Error(
+                "Le serveur a retourné une réponse invalide."
+            );
         }
+    }
 
-    </script>
 
-</body>
-</html>
+    if (!response.ok) {
+
+        throw new Error(
+            data.message ||
+            data.error ||
+            `Erreur serveur ${response.status}.`
+        );
+    }
+
+
+    return data;
+}
+
+
+// ============================================================
+// PROTECTION DES PAGES ADMIN
+// ============================================================
+
+function protectAdminPage() {
+
+    const token =
+        getAdminToken();
+
+    const currentPage =
+        window.location.pathname;
+
+    const isLoginPage =
+        currentPage.includes(
+            "login-admin.html"
+        );
+
+
+    if (
+        !token &&
+        !isLoginPage
+    ) {
+
+        window.location.href =
+            "login-admin.html";
+    }
+}
+
+
+// ============================================================
+// DÉCONNEXION
+// ============================================================
+
+function logoutAdmin() {
+
+    removeAdminToken();
+
+    removeAdminUser();
+
+    window.location.href =
+        "login-admin.html";
+}
+
+
+// ============================================================
+// AFFICHAGE DES MESSAGES
+// ============================================================
+
+function showAdminMessage(
+    elementOrId,
+    messageText,
+    color = "#ff5b5b"
+) {
+
+    let element;
+
+
+    if (
+        typeof elementOrId ===
+        "string"
+    ) {
+
+        element =
+            document.getElementById(
+                elementOrId
+            );
+
+    } else {
+
+        element =
+            elementOrId;
+    }
+
+
+    if (!element) {
+
+        console.error(
+            "Zone de message introuvable."
+        );
+
+        return;
+    }
+
+
+    element.textContent =
+        messageText;
+
+    element.style.color =
+        color;
+}
