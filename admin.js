@@ -3,9 +3,14 @@
 // ============================================================
 
 const ADMIN_CONFIG = {
-    API_URL: "https://point-focal.onrender.com/api",
-    TOKEN_KEY: "point_focal_admin_token",
-    USER_KEY: "point_focal_admin_user"
+    API_URL:
+        "https://point-focal-backend.onrender.com/api",
+
+    TOKEN_KEY:
+        "point_focal_admin_token",
+
+    USER_KEY:
+        "point_focal_admin_user"
 };
 
 
@@ -14,19 +19,24 @@ const ADMIN_CONFIG = {
 // ============================================================
 
 function getAdminToken() {
+
     return localStorage.getItem(
         ADMIN_CONFIG.TOKEN_KEY
     );
 }
 
+
 function saveAdminToken(token) {
+
     localStorage.setItem(
         ADMIN_CONFIG.TOKEN_KEY,
         token
     );
 }
 
+
 function removeAdminToken() {
+
     localStorage.removeItem(
         ADMIN_CONFIG.TOKEN_KEY
     );
@@ -39,9 +49,10 @@ function removeAdminToken() {
 
 function getAdminUser() {
 
-    const savedUser = localStorage.getItem(
-        ADMIN_CONFIG.USER_KEY
-    );
+    const savedUser =
+        localStorage.getItem(
+            ADMIN_CONFIG.USER_KEY
+        );
 
     if (!savedUser) {
         return null;
@@ -53,11 +64,17 @@ function getAdminUser() {
             savedUser
         );
 
-    } catch {
+    } catch (error) {
+
+        console.error(
+            "Utilisateur administrateur invalide :",
+            error
+        );
 
         return null;
     }
 }
+
 
 function saveAdminUser(user) {
 
@@ -66,6 +83,7 @@ function saveAdminUser(user) {
         JSON.stringify(user)
     );
 }
+
 
 function removeAdminUser() {
 
@@ -94,14 +112,19 @@ async function adminApiCall(
         ...(options.headers || {})
     };
 
+
     if (token) {
 
         headers.Authorization =
             `Bearer ${token}`;
     }
 
-    const response =
-        await fetch(
+
+    let response;
+
+    try {
+
+        response = await fetch(
             `${ADMIN_CONFIG.API_URL}${endpoint}`,
             {
                 ...options,
@@ -109,23 +132,62 @@ async function adminApiCall(
             }
         );
 
-    const data =
-        await response.json();
+    } catch (error) {
+
+        console.error(
+            "Erreur réseau :",
+            error
+        );
+
+        throw new Error(
+            "Impossible de contacter le serveur. Vérifie ta connexion ou attends le démarrage de Render."
+        );
+    }
+
+
+    let data = {};
+
+    const responseText =
+        await response.text();
+
+
+    if (responseText) {
+
+        try {
+
+            data =
+                JSON.parse(responseText);
+
+        } catch (error) {
+
+            console.error(
+                "Réponse non JSON :",
+                responseText
+            );
+
+            throw new Error(
+                "Le serveur a retourné une réponse invalide."
+            );
+        }
+    }
+
 
     if (!response.ok) {
 
         throw new Error(
             data.message ||
-            "Erreur serveur."
+            data.error ||
+            `Erreur serveur ${response.status}.`
         );
     }
+
 
     return data;
 }
 
 
 // ============================================================
-// PROTECTION
+// PROTECTION DES PAGES ADMIN
 // ============================================================
 
 function protectAdminPage() {
@@ -140,6 +202,7 @@ function protectAdminPage() {
         currentPage.includes(
             "login-admin.html"
         );
+
 
     if (
         !token &&
@@ -168,26 +231,47 @@ function logoutAdmin() {
 
 
 // ============================================================
-// MESSAGE
+// AFFICHAGE DES MESSAGES
 // ============================================================
 
 function showAdminMessage(
-    elementId,
-    message,
-    color = "#ffffff"
+    elementOrId,
+    messageText,
+    color = "#ff5b5b"
 ) {
 
-    const element =
-        document.getElementById(
-            elementId
-        );
+    let element;
+
+
+    if (
+        typeof elementOrId ===
+        "string"
+    ) {
+
+        element =
+            document.getElementById(
+                elementOrId
+            );
+
+    } else {
+
+        element =
+            elementOrId;
+    }
+
 
     if (!element) {
+
+        console.error(
+            "Zone de message introuvable."
+        );
+
         return;
     }
 
+
     element.textContent =
-        message;
+        messageText;
 
     element.style.color =
         color;
