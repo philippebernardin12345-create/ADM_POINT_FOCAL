@@ -893,31 +893,31 @@
                 formMessage.textContent = "";
 
                 const data =
-                    await adminApiCall(
-                        "/admin/opportunities",
-                        {
-                            method: "POST",
+    await adminApiCall(
+        "/admin/opportunities",
+        {
+            method: "POST",
 
-                            body: JSON.stringify({
-    name,
-    description,
+            body: JSON.stringify({
+                name,
+                description,
 
-    opportunityUrl:
-        opportunityUrl.value.trim(),
+                opportunityUrl:
+                    opportunityUrl.value.trim(),
 
-    status,
+                status,
 
-    prelaunchEnabled:
-        prelaunchEnabled.checked,
+                prelaunchEnabled:
+                    prelaunchEnabled.checked,
 
-    publicOpen:
-        publicOpen.checked,
+                publicOpen:
+                    publicOpen.checked,
 
-    defaultLanguage:
-        language
-})
-
-                const opportunity =
+                defaultLanguage:
+                    language
+            })
+        }
+    );
                     data.opportunity ||
                     data.data ||
                     data;
