@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -12,7 +11,6 @@
     <title>Connexion administrateur</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
@@ -25,7 +23,7 @@
             align-items: center;
             padding: 20px;
             background: #0b0e11;
-            color: white;
+            color: #ffffff;
             font-family: Arial, sans-serif;
         }
 
@@ -35,55 +33,100 @@
             background: #1e2329;
             padding: 30px;
             border-radius: 14px;
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.45);
         }
 
         h2 {
-            text-align: center;
-            color: #f0b90b;
             margin-top: 0;
             margin-bottom: 25px;
+            text-align: center;
+            color: #f0b90b;
+        }
+
+        .field {
+            margin-bottom: 15px;
         }
 
         input {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #333;
+            padding: 13px 14px;
+            border: 1px solid #333b44;
             border-radius: 8px;
+            outline: none;
             background: #111418;
-            color: white;
+            color: #ffffff;
+            font-size: 15px;
         }
 
-        button {
+        input:focus {
+            border-color: #f0b90b;
+        }
+
+        input::placeholder {
+            color: #7f8994;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 52px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .toggle-password:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .login-button {
             width: 100%;
             padding: 13px;
             border: none;
             border-radius: 8px;
             background: #f0b90b;
-            color: black;
+            color: #000000;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
         }
 
-        button:disabled {
+        .login-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        .login-message {
+            min-height: 22px;
+            margin-top: 15px;
+            text-align: center;
+            color: #ff6b6b;
+            line-height: 1.4;
         }
 
         .message {
             margin-top: 18px;
             text-align: center;
             color: #9aa4af;
+            font-size: 14px;
         }
-
-        .login-message {
-            margin-top: 15px;
-            text-align: center;
-            min-height: 20px;
-        }
-
     </style>
-
 </head>
 
 <body>
@@ -94,22 +137,39 @@
             Connexion administrateur
         </h2>
 
-        <input
-            id="adminEmail"
-            type="email"
-            placeholder="Email administrateur"
-            autocomplete="email"
-        >
+        <div class="field">
+            <input
+                id="adminEmail"
+                type="email"
+                placeholder="Email administrateur"
+                autocomplete="email"
+            >
+        </div>
 
-        <input
-            id="adminPassword"
-            type="password"
-            placeholder="Mot de passe"
-            autocomplete="current-password"
-        >
+        <div class="field password-wrapper">
+
+            <input
+                id="adminPassword"
+                type="password"
+                placeholder="Mot de passe"
+                autocomplete="current-password"
+            >
+
+            <button
+                id="togglePasswordButton"
+                class="toggle-password"
+                type="button"
+                aria-label="Afficher le mot de passe"
+                title="Afficher le mot de passe"
+            >
+                👁
+            </button>
+
+        </div>
 
         <button
             id="loginButton"
+            class="login-button"
             type="button"
         >
             Se connecter
@@ -126,10 +186,9 @@
 
     </div>
 
-    <script src="admin.js?v=3"></script>
+    <script src="admin.js?v=4"></script>
 
     <script>
-
         const button =
             document.getElementById(
                 "loginButton"
@@ -145,6 +204,11 @@
                 "adminPassword"
             );
 
+        const togglePasswordButton =
+            document.getElementById(
+                "togglePasswordButton"
+            );
+
         const message =
             document.getElementById(
                 "loginMessage"
@@ -157,15 +221,64 @@
         );
 
 
+        emailInput.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Enter") {
+                    loginAdmin();
+                }
+            }
+        );
+
+
         passwordInput.addEventListener(
             "keydown",
             function (event) {
 
                 if (event.key === "Enter") {
-
                     loginAdmin();
                 }
+            }
+        );
 
+
+        togglePasswordButton.addEventListener(
+            "click",
+            function () {
+
+                const passwordIsHidden =
+                    passwordInput.type ===
+                    "password";
+
+
+                passwordInput.type =
+                    passwordIsHidden
+                        ? "text"
+                        : "password";
+
+
+                togglePasswordButton.textContent =
+                    passwordIsHidden
+                        ? "🙈"
+                        : "👁";
+
+
+                togglePasswordButton.setAttribute(
+                    "aria-label",
+                    passwordIsHidden
+                        ? "Masquer le mot de passe"
+                        : "Afficher le mot de passe"
+                );
+
+
+                togglePasswordButton.title =
+                    passwordIsHidden
+                        ? "Masquer le mot de passe"
+                        : "Afficher le mot de passe";
+
+
+                passwordInput.focus();
             }
         );
 
@@ -195,6 +308,8 @@
             try {
 
                 button.disabled = true;
+
+                togglePasswordButton.disabled = true;
 
                 button.textContent =
                     "Connexion...";
@@ -242,7 +357,6 @@
 
 
                 if (user) {
-
                     saveAdminUser(user);
                 }
 
@@ -255,17 +369,19 @@
                 showAdminMessage(
                     message,
                     error.message
+                    || "La connexion a échoué."
                 );
 
             } finally {
 
                 button.disabled = false;
 
+                togglePasswordButton.disabled = false;
+
                 button.textContent =
                     "Se connecter";
             }
         }
-
     </script>
 
 </body>
