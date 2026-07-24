@@ -10,7 +10,9 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Opportunités - Point Focal Admin</title>
+    <title>
+        Opportunités - Point Focal Admin
+    </title>
 
     <style>
 
@@ -20,110 +22,379 @@
 
         body {
             margin: 0;
-            background: #0b0e11;
-            color: white;
-            font-family: Arial, sans-serif;
+            min-height: 100vh;
             padding-bottom: 90px;
+            background: #0b0e11;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        body.modal-open {
+            overflow: hidden;
         }
 
         .header {
-            background: #1e2329;
             padding: 20px;
             text-align: center;
+            background: #1e2329;
             border-bottom: 1px solid #2b3139;
         }
 
         .header h1 {
             margin: 0;
             color: #f0b90b;
+            font-size: 25px;
+        }
+
+        .header p {
+            margin: 10px 0 0;
+            color: #b7bdc6;
+            font-size: 14px;
         }
 
         .container {
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
             padding: 20px;
         }
 
-        .card {
-            background: #1e2329;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 15px;
-        }
-
-        .title {
-            color: #f0b90b;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .info {
-            color: #b7bdc6;
-            margin-bottom: 8px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            background: rgba(0, 255, 120, 0.15);
-            color: #4cff8a;
-            font-size: 13px;
-        }
-
-        .actions {
+        .top-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .edit {
-            background: #f0b90b;
-            color: black;
-        }
-
-        .disable {
-            background: #d83a3a;
-            color: white;
+            justify-content: flex-end;
+            margin-bottom: 18px;
         }
 
         .add-button {
             width: 100%;
-            margin-top: 20px;
-            padding: 14px;
+            max-width: 280px;
+            padding: 14px 18px;
             border: none;
             border-radius: 10px;
             background: #f0b90b;
-            color: black;
+            color: #000000;
+            font-size: 15px;
             font-weight: bold;
+            cursor: pointer;
+        }
+
+        .add-button:hover {
+            background: #ffd43b;
+        }
+
+        .status-message {
+            min-height: 24px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #b7bdc6;
+            line-height: 1.5;
+        }
+
+        .empty-state {
+            display: none;
+            padding: 35px 20px;
+            border: 1px dashed #3a424c;
+            border-radius: 12px;
+            background: #1e2329;
+            text-align: center;
+            color: #b7bdc6;
+        }
+
+        .opportunities-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .card {
+            padding: 18px;
+            border: 1px solid #2b3139;
+            border-radius: 12px;
+            background: #1e2329;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .title {
+            color: #f0b90b;
+            font-size: 19px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        .badge {
+            display: inline-block;
+            flex-shrink: 0;
+            padding: 5px 11px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-active {
+            background: rgba(76, 255, 138, 0.13);
+            color: #4cff8a;
+        }
+
+        .badge-inactive {
+            background: rgba(255, 107, 107, 0.13);
+            color: #ff6b6b;
+        }
+
+        .badge-draft {
+            background: rgba(240, 185, 11, 0.13);
+            color: #f0b90b;
+        }
+
+        .description {
+            margin-bottom: 14px;
+            color: #d1d5db;
+            line-height: 1.55;
+            overflow-wrap: anywhere;
+        }
+
+        .information-grid {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(170px, 1fr)
+            );
+            gap: 10px;
+        }
+
+        .info {
+            padding: 10px;
+            border-radius: 8px;
+            background: #111418;
+            color: #b7bdc6;
+            font-size: 13px;
+        }
+
+        .info strong {
+            color: #ffffff;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-button {
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .edit-button {
+            background: #f0b90b;
+            color: #000000;
+        }
+
+        .toggle-button {
+            background: #d83a3a;
+            color: #ffffff;
+        }
+
+        .action-button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.78);
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            padding: 22px;
+            border: 1px solid #333b44;
+            border-radius: 14px;
+            background: #1e2329;
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #f0b90b;
+            font-size: 21px;
+        }
+
+        .close-button {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            border: none;
+            border-radius: 8px;
+            background: #111418;
+            color: #ffffff;
+            font-size: 23px;
+            cursor: pointer;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #d9dde3;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #333b44;
+            border-radius: 9px;
+            outline: none;
+            background: #111418;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #f0b90b;
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: grid;
+            gap: 11px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px;
+            border: 1px solid #333b44;
+            border-radius: 9px;
+            background: #111418;
+        }
+
+        .checkbox-row input {
+            width: 19px;
+            height: 19px;
+            margin: 0;
+            accent-color: #f0b90b;
+        }
+
+        .checkbox-row label {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 9px;
+            background: #f0b90b;
+            color: #000000;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-message {
+            min-height: 24px;
+            margin-top: 15px;
+            text-align: center;
+            line-height: 1.5;
         }
 
         .menu {
             position: fixed;
             bottom: 0;
             left: 0;
+            z-index: 50;
             width: 100%;
-            background: #1e2329;
-            border-top: 1px solid #2b3139;
-
             display: grid;
             grid-template-columns: repeat(4, 1fr);
+            background: #1e2329;
+            border-top: 1px solid #2b3139;
         }
 
         .menu a {
-            padding: 15px 5px;
+            padding: 14px 4px;
             text-align: center;
             text-decoration: none;
-            color: white;
-            font-size: 13px;
+            color: #ffffff;
+            font-size: 12px;
+        }
+
+        .menu a:hover,
+        .menu a.active {
+            background: #2b3139;
+            color: #f0b90b;
+        }
+
+        @media (max-width: 520px) {
+
+            .top-actions {
+                display: block;
+            }
+
+            .add-button {
+                max-width: none;
+            }
+
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header {
+                flex-direction: column;
+            }
         }
 
     </style>
@@ -132,7 +403,7 @@
 
 <body>
 
-    <div class="header">
+    <header class="header">
 
         <h1>
             Opportunités
@@ -142,81 +413,214 @@
             Gestion des opportunités Point Focal
         </p>
 
-    </div>
+    </header>
 
-    <div class="container">
+    <main class="container">
 
-        <div class="card">
+        <div class="top-actions">
 
-            <div class="title">
-                Victory Automatic
-            </div>
-
-            <div class="info">
-                Position : 1
-            </div>
-
-            <div class="info">
-                Vidéo obligatoire : Oui
-            </div>
-
-            <div class="badge">
-                Active
-            </div>
-
-            <div class="actions">
-
-                <button class="edit">
-                    Modifier
-                </button>
-
-                <button class="disable">
-                    Désactiver
-                </button>
-
-            </div>
+            <button
+                id="openAddModalButton"
+                class="add-button"
+                type="button"
+            >
+                + Ajouter une opportunité
+            </button>
 
         </div>
 
-        <div class="card">
+        <div
+            id="pageMessage"
+            class="status-message"
+        ></div>
 
-            <div class="title">
-                Victory World
-            </div>
-
-            <div class="info">
-                Position : 2
-            </div>
-
-            <div class="info">
-                Vidéo obligatoire : Non
-            </div>
-
-            <div class="badge">
-                Active
-            </div>
-
-            <div class="actions">
-
-                <button class="edit">
-                    Modifier
-                </button>
-
-                <button class="disable">
-                    Désactiver
-                </button>
-
-            </div>
-
+        <div
+            id="emptyState"
+            class="empty-state"
+        >
+            Aucune opportunité n’est encore affichée.
         </div>
 
-        <button class="add-button">
-            + Ajouter une opportunité
-        </button>
+        <section
+            id="opportunitiesList"
+            class="opportunities-list"
+        >
+        </section>
+
+    </main>
+
+    <div
+        id="opportunityModal"
+        class="modal-overlay"
+        aria-hidden="true"
+    >
+
+        <section
+            class="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modalTitle"
+        >
+
+            <div class="modal-header">
+
+                <h2 id="modalTitle">
+                    Ajouter une opportunité
+                </h2>
+
+                <button
+                    id="closeModalButton"
+                    class="close-button"
+                    type="button"
+                    aria-label="Fermer"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <form id="opportunityForm">
+
+                <div class="field">
+
+                    <label for="opportunityName">
+                        Nom de l’opportunité
+                    </label>
+
+                    <input
+                        id="opportunityName"
+                        type="text"
+                        placeholder="Exemple : Victory World"
+                        maxlength="150"
+                        required
+                    >
+
+                </div>
+
+                <div class="field">
+
+                    <label for="opportunityDescription">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="opportunityDescription"
+                        placeholder="Décris cette opportunité..."
+                        maxlength="1500"
+                    ></textarea>
+
+                </div>
+
+                <div class="field">
+
+                    <label for="opportunityStatus">
+                        Statut
+                    </label>
+
+                    <select id="opportunityStatus">
+
+                        <option value="draft">
+                            Brouillon
+                        </option>
+
+                        <option value="inactive">
+                            Inactive
+                        </option>
+
+                        <option value="active">
+                            Active
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="field">
+
+                    <label for="defaultLanguage">
+                        Langue par défaut
+                    </label>
+
+                    <select id="defaultLanguage">
+
+                        <option value="fr">
+                            Français
+                        </option>
+
+                        <option value="en">
+                            Anglais
+                        </option>
+
+                        <option value="es">
+                            Espagnol
+                        </option>
+
+                        <option value="pt">
+                            Portugais
+                        </option>
+
+                        <option value="ar">
+                            Arabe
+                        </option>
+
+                        <option value="hi">
+                            Hindi
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="checkbox-group">
+
+                    <div class="checkbox-row">
+
+                        <input
+                            id="prelaunchEnabled"
+                            type="checkbox"
+                        >
+
+                        <label for="prelaunchEnabled">
+                            Activer le pré-lancement
+                        </label>
+
+                    </div>
+
+                    <div class="checkbox-row">
+
+                        <input
+                            id="publicOpen"
+                            type="checkbox"
+                        >
+
+                        <label for="publicOpen">
+                            Ouvrir au public
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <button
+                    id="submitButton"
+                    class="submit-button"
+                    type="submit"
+                >
+                    Ajouter l’opportunité
+                </button>
+
+                <div
+                    id="formMessage"
+                    class="form-message"
+                ></div>
+
+            </form>
+
+        </section>
 
     </div>
 
-    <div class="menu">
+    <nav class="menu">
 
         <a href="dashboard-admin.html">
             📊<br>
@@ -228,7 +632,10 @@
             Utilisateurs
         </a>
 
-        <a href="#">
+        <a
+            href="opportunities-admin.html"
+            class="active"
+        >
             🎯<br>
             Opportunités
         </a>
@@ -238,7 +645,563 @@
             Paramètres
         </a>
 
-    </div>
+    </nav>
+
+    <script src="admin.js?v=7"></script>
+
+    <script>
+
+        protectAdminPage();
+
+
+        const opportunitiesList =
+            document.getElementById(
+                "opportunitiesList"
+            );
+
+        const emptyState =
+            document.getElementById(
+                "emptyState"
+            );
+
+        const pageMessage =
+            document.getElementById(
+                "pageMessage"
+            );
+
+        const opportunityModal =
+            document.getElementById(
+                "opportunityModal"
+            );
+
+        const openAddModalButton =
+            document.getElementById(
+                "openAddModalButton"
+            );
+
+        const closeModalButton =
+            document.getElementById(
+                "closeModalButton"
+            );
+
+        const opportunityForm =
+            document.getElementById(
+                "opportunityForm"
+            );
+
+        const opportunityName =
+            document.getElementById(
+                "opportunityName"
+            );
+
+        const opportunityDescription =
+            document.getElementById(
+                "opportunityDescription"
+            );
+
+        const opportunityStatus =
+            document.getElementById(
+                "opportunityStatus"
+            );
+
+        const defaultLanguage =
+            document.getElementById(
+                "defaultLanguage"
+            );
+
+        const prelaunchEnabled =
+            document.getElementById(
+                "prelaunchEnabled"
+            );
+
+        const publicOpen =
+            document.getElementById(
+                "publicOpen"
+            );
+
+        const submitButton =
+            document.getElementById(
+                "submitButton"
+            );
+
+        const formMessage =
+            document.getElementById(
+                "formMessage"
+            );
+
+
+        const languages = {
+            fr: "Français",
+            en: "Anglais",
+            es: "Espagnol",
+            pt: "Portugais",
+            ar: "Arabe",
+            hi: "Hindi"
+        };
+
+
+        openAddModalButton.addEventListener(
+            "click",
+            openModal
+        );
+
+
+        closeModalButton.addEventListener(
+            "click",
+            closeModal
+        );
+
+
+        opportunityModal.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target ===
+                    opportunityModal
+                ) {
+                    closeModal();
+                }
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape" &&
+                    opportunityModal.classList.contains(
+                        "visible"
+                    )
+                ) {
+                    closeModal();
+                }
+            }
+        );
+
+
+        opportunityForm.addEventListener(
+            "submit",
+            createOpportunity
+        );
+
+
+        function openModal() {
+
+            opportunityForm.reset();
+
+            opportunityStatus.value =
+                "draft";
+
+            defaultLanguage.value =
+                "fr";
+
+            formMessage.textContent = "";
+
+            opportunityModal.classList.add(
+                "visible"
+            );
+
+            opportunityModal.setAttribute(
+                "aria-hidden",
+                "false"
+            );
+
+            document.body.classList.add(
+                "modal-open"
+            );
+
+            setTimeout(
+                function () {
+                    opportunityName.focus();
+                },
+                100
+            );
+        }
+
+
+        function closeModal() {
+
+            opportunityModal.classList.remove(
+                "visible"
+            );
+
+            opportunityModal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+            document.body.classList.remove(
+                "modal-open"
+            );
+        }
+
+
+        async function createOpportunity(
+            event
+        ) {
+            event.preventDefault();
+
+            const name =
+                opportunityName.value.trim();
+
+            const description =
+                opportunityDescription.value.trim();
+
+            const status =
+                opportunityStatus.value;
+
+            const language =
+                defaultLanguage.value;
+
+            if (!name) {
+
+                showAdminMessage(
+                    formMessage,
+                    "Le nom de l’opportunité est obligatoire."
+                );
+
+                opportunityName.focus();
+
+                return;
+            }
+
+            try {
+
+                submitButton.disabled = true;
+
+                submitButton.textContent =
+                    "Ajout en cours...";
+
+                formMessage.textContent = "";
+
+                const data =
+                    await adminApiCall(
+                        "/admin/opportunities",
+                        {
+                            method: "POST",
+
+                            body: JSON.stringify({
+                                name,
+                                description,
+                                status,
+
+                                prelaunchEnabled:
+                                    prelaunchEnabled.checked,
+
+                                publicOpen:
+                                    publicOpen.checked,
+
+                                defaultLanguage:
+                                    language
+                            })
+                        }
+                    );
+
+                const opportunity =
+                    data.opportunity ||
+                    data.data ||
+                    data;
+
+                addOpportunityCard(
+                    opportunity
+                );
+
+                showAdminMessage(
+                    pageMessage,
+                    data.message ||
+                    "Opportunité ajoutée avec succès.",
+                    "#4cff8a"
+                );
+
+                closeModal();
+
+            } catch (error) {
+
+                showAdminMessage(
+                    formMessage,
+                    error.message ||
+                    "Impossible d’ajouter l’opportunité."
+                );
+
+                handleAuthenticationError(
+                    error
+                );
+
+            } finally {
+
+                submitButton.disabled = false;
+
+                submitButton.textContent =
+                    "Ajouter l’opportunité";
+            }
+        }
+
+
+        function addOpportunityCard(
+            opportunity
+        ) {
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+            card.className =
+                "card";
+
+            const status =
+                String(
+                    opportunity.status ||
+                    "draft"
+                ).toLowerCase();
+
+            const statusText =
+                getStatusText(
+                    status
+                );
+
+            const badgeClass =
+                getBadgeClass(
+                    status
+                );
+
+            const description =
+                opportunity.description ||
+                "Aucune description.";
+
+            const languageCode =
+                opportunity.default_language ||
+                opportunity.defaultLanguage ||
+                "fr";
+
+            const prelaunch =
+                opportunity.prelaunch_enabled ??
+                opportunity.prelaunchEnabled ??
+                false;
+
+            const isPublic =
+                opportunity.public_open ??
+                opportunity.publicOpen ??
+                false;
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="title"></div>
+
+                    <span class="badge ${badgeClass}">
+                        ${escapeHtml(statusText)}
+                    </span>
+                </div>
+
+                <div class="description"></div>
+
+                <div class="information-grid">
+
+                    <div class="info">
+                        <strong>Langue :</strong>
+                        ${escapeHtml(
+                            languages[languageCode] ||
+                            languageCode
+                        )}
+                    </div>
+
+                    <div class="info">
+                        <strong>Pré-lancement :</strong>
+                        ${prelaunch ? "Oui" : "Non"}
+                    </div>
+
+                    <div class="info">
+                        <strong>Ouverture publique :</strong>
+                        ${isPublic ? "Oui" : "Non"}
+                    </div>
+
+                </div>
+
+                <div class="actions">
+
+                    <button
+                        class="action-button edit-button"
+                        type="button"
+                    >
+                        Modifier
+                    </button>
+
+                    <button
+                        class="action-button toggle-button"
+                        type="button"
+                    >
+                        ${
+                            status === "active"
+                                ? "Désactiver"
+                                : "Activer"
+                        }
+                    </button>
+
+                </div>
+            `;
+
+            card.querySelector(
+                ".title"
+            ).textContent =
+                opportunity.name ||
+                "Opportunité sans nom";
+
+            card.querySelector(
+                ".description"
+            ).textContent =
+                description;
+
+            const editButton =
+                card.querySelector(
+                    ".edit-button"
+                );
+
+            const toggleButton =
+                card.querySelector(
+                    ".toggle-button"
+                );
+
+            editButton.addEventListener(
+                "click",
+                function () {
+
+                    showAdminMessage(
+                        pageMessage,
+                        "La modification sera activée avec la prochaine route backend.",
+                        "#f0b90b"
+                    );
+                }
+            );
+
+            toggleButton.addEventListener(
+                "click",
+                function () {
+
+                    showAdminMessage(
+                        pageMessage,
+                        "L’activation et la désactivation seront branchées à la prochaine étape.",
+                        "#f0b90b"
+                    );
+                }
+            );
+
+            opportunitiesList.prepend(
+                card
+            );
+
+            updateEmptyState();
+        }
+
+
+        function updateEmptyState() {
+
+            const hasCards =
+                opportunitiesList.children
+                    .length > 0;
+
+            emptyState.style.display =
+                hasCards
+                    ? "none"
+                    : "block";
+        }
+
+
+        function getStatusText(
+            status
+        ) {
+
+            if (status === "active") {
+                return "Active";
+            }
+
+            if (status === "inactive") {
+                return "Inactive";
+            }
+
+            return "Brouillon";
+        }
+
+
+        function getBadgeClass(
+            status
+        ) {
+
+            if (status === "active") {
+                return "badge-active";
+            }
+
+            if (status === "inactive") {
+                return "badge-inactive";
+            }
+
+            return "badge-draft";
+        }
+
+
+        function handleAuthenticationError(
+            error
+        ) {
+
+            const message =
+                String(
+                    error.message || ""
+                ).toLowerCase();
+
+            if (
+                message.includes("token") ||
+                message.includes("session")
+            ) {
+
+                removeAdminToken();
+
+                removeAdminUser();
+
+                setTimeout(
+                    function () {
+
+                        window.location.href =
+                            "login-admin.html";
+                    },
+                    1200
+                );
+            }
+        }
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(value)
+                .replaceAll(
+                    "&",
+                    "&amp;"
+                )
+                .replaceAll(
+                    "<",
+                    "&lt;"
+                )
+                .replaceAll(
+                    ">",
+                    "&gt;"
+                )
+                .replaceAll(
+                    '"',
+                    "&quot;"
+                )
+                .replaceAll(
+                    "'",
+                    "&#039;"
+                );
+        }
+
+
+        updateEmptyState();
+
+    </script>
 
 </body>
 
