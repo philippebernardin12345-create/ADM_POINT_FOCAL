@@ -756,7 +756,7 @@ const opportunityUrl =
             hi: "Hindi"
         };
 
-
+let editingOpportunityId = null;
         openAddModalButton.addEventListener(
             "click",
             openModal
@@ -805,9 +805,18 @@ const opportunityUrl =
         );
 
 
-        function openModal() {
+       function openModal() {
 
-            opportunityForm.reset();
+           editingOpportunityId = null;
+
+document.getElementById(
+    "modalTitle"
+).textContent =
+    "Ajouter une opportunité";
+
+submitButton.textContent =
+    "Ajouter l’opportunité";
+ opportunityForm.reset();
 
             opportunityStatus.value =
                 "draft";
