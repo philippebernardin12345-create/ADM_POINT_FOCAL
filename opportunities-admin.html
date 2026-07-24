@@ -899,21 +899,23 @@
                             method: "POST",
 
                             body: JSON.stringify({
-                                name,
-                                description,
-                                status,
+    name,
+    description,
 
-                                prelaunchEnabled:
-                                    prelaunchEnabled.checked,
+    opportunityUrl:
+        opportunityUrl.value.trim(),
 
-                                publicOpen:
-                                    publicOpen.checked,
+    status,
 
-                                defaultLanguage:
-                                    language
-                            })
-                        }
-                    );
+    prelaunchEnabled:
+        prelaunchEnabled.checked,
+
+    publicOpen:
+        publicOpen.checked,
+
+    defaultLanguage:
+        language
+})
 
                 const opportunity =
                     data.opportunity ||
