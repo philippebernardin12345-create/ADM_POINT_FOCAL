@@ -207,76 +207,85 @@
 
     </div>
 
-    <script>
+    <script src="admin.js?v=5"></script>
 
-        const API_URL =
-            "https://point-focal.onrender.com/api";
+<script>
+    protectAdminPage();
 
-        async function loadDashboardStats() {
+    async function loadDashboardStats() {
 
-            const statusMessage =
-                document.getElementById(
-                    "statusMessage"
+        const statusMessage =
+            document.getElementById(
+                "statusMessage"
+            );
+
+        try {
+
+            const data =
+                await adminApiCall(
+                    "/admin/dashboard"
                 );
 
-            try {
+            document.getElementById(
+                "usersCount"
+            ).textContent =
+                data.users ?? 0;
 
-                const response =
-                    await fetch(
-                        `${API_URL}/admin/dashboard`
-                    );
+            document.getElementById(
+                "leadersCount"
+            ).textContent =
+                `${data.leaders ?? 0} / 50`;
 
-                const data =
-                    await response.json();
+            document.getElementById(
+                "paymentsCount"
+            ).textContent =
+                data.payments ?? 0;
 
-                if (!response.ok) {
-                    throw new Error(
-                        data.message
-                        || "Impossible de charger les statistiques."
-                    );
-                }
+            document.getElementById(
+                "opportunitiesCount"
+            ).textContent =
+                data.opportunities ?? 0;
 
-                document.getElementById(
-                    "usersCount"
-                ).textContent =
-                    data.users || 0;
+            statusMessage.textContent =
+                "Statistiques mises à jour.";
 
-                document.getElementById(
-                    "leadersCount"
-                ).textContent =
-                    `${data.leaders || 0} / 50`;
+            statusMessage.style.color =
+                "#4cff8a";
 
-                document.getElementById(
-                    "paymentsCount"
-                ).textContent =
-                    data.payments || 0;
+        } catch (error) {
 
-                document.getElementById(
-                    "opportunitiesCount"
-                ).textContent =
-                    data.opportunities || 0;
+            statusMessage.textContent =
+                error.message ||
+                "Impossible de charger les statistiques.";
 
-                statusMessage.textContent =
-                    "Statistiques mises à jour.";
+            statusMessage.style.color =
+                "#ff6b6b";
 
-                statusMessage.style.color =
-                    "#4cff8a";
+            const message =
+                String(
+                    error.message || ""
+                ).toLowerCase();
 
-            } catch (error) {
+            if (
+                message.includes("token") ||
+                message.includes("session")
+            ) {
+                removeAdminToken();
+                removeAdminUser();
 
-                statusMessage.textContent =
-                    error.message;
-
-                statusMessage.style.color =
-                    "#ff6b6b";
-
+                setTimeout(
+                    function () {
+                        window.location.href =
+                            "login-admin.html";
+                    },
+                    1200
+                );
             }
-
         }
+    }
 
-        loadDashboardStats();
-
-    </script>
+    loadDashboardStats();
+</script>
 
 </body>
 </html>
