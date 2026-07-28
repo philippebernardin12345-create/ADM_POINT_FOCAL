@@ -665,7 +665,120 @@
 <script src="admin.js?v=7"></script>
 
 <script>
-    // le JavaScript complet sera collé ici
+    <script>
+    const API_BASE_URL =
+        window.ADMIN_CONFIG?.API_URL ||
+        "https://point-focal.onrender.com/api";
+
+    const OPPORTUNITIES_API =
+        `${API_BASE_URL}/admin/opportunities`;
+
+    const ADMIN_TOKEN_KEY =
+        "point_focal_admin_token";
+
+    const openAddModalButton =
+        document.getElementById(
+            "openAddModalButton"
+        );
+
+    const closeModalButton =
+        document.getElementById(
+            "closeModalButton"
+        );
+
+    const opportunityModal =
+        document.getElementById(
+            "opportunityModal"
+        );
+
+    const opportunityForm =
+        document.getElementById(
+            "opportunityForm"
+        );
+
+    const modalTitle =
+        document.getElementById(
+            "modalTitle"
+        );
+
+    const opportunityName =
+        document.getElementById(
+            "opportunityName"
+        );
+
+    const opportunityDescription =
+        document.getElementById(
+            "opportunityDescription"
+        );
+
+    const opportunityUrl =
+        document.getElementById(
+            "opportunityUrl"
+        );
+
+    const opportunityStatus =
+        document.getElementById(
+            "opportunityStatus"
+        );
+
+    const defaultLanguage =
+        document.getElementById(
+            "defaultLanguage"
+        );
+
+    const prelaunchEnabled =
+        document.getElementById(
+            "prelaunchEnabled"
+        );
+
+    const publicOpen =
+        document.getElementById(
+            "publicOpen"
+        );
+
+    const submitButton =
+        document.getElementById(
+            "submitButton"
+        );
+
+    const formMessage =
+        document.getElementById(
+            "formMessage"
+        );
+
+    const pageMessage =
+        document.getElementById(
+            "pageMessage"
+        );
+
+    const emptyState =
+        document.getElementById(
+            "emptyState"
+        );
+
+    const opportunitiesList =
+        document.getElementById(
+            "opportunitiesList"
+        );
+
+    let opportunities = [];
+
+    let editingOpportunityId = null;
+
+
+    function getAdminToken() {
+        return localStorage.getItem(
+            ADMIN_TOKEN_KEY
+        );
+    }
+
+
+    function redirectToLogin() {
+        localStorage.removeItem(
+            ADMIN_TOKEN_KEY
+        );
+
+       
 </script>
 
 </body>
