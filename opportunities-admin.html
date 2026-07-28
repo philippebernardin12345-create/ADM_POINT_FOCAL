@@ -659,8 +659,316 @@
 
     </nav>
 
-    <script src="admin.js?v=7"></script>
+    
+<script>
 
+    protectAdminPage();
+
+
+    // ============================================================
+    // ÉLÉMENTS DE LA PAGE
+    // ============================================================
+
+    const opportunitiesList =
+        document.getElementById(
+            "opportunitiesList"
+        );
+
+    const emptyState =
+        document.getElementById(
+            "emptyState"
+        );
+
+    const pageMessage =
+        document.getElementById(
+            "pageMessage"
+        );
+
+    const opportunityModal =
+        document.getElementById(
+            "opportunityModal"
+        );
+
+    const openAddModalButton =
+        document.getElementById(
+            "openAddModalButton"
+        );
+
+    const closeModalButton =
+        document.getElementById(
+            "closeModalButton"
+        );
+
+    const opportunityForm =
+        document.getElementById(
+            "opportunityForm"
+        );
+
+    const modalTitle =
+        document.getElementById(
+            "modalTitle"
+        );
+
+    const opportunityName =
+        document.getElementById(
+            "opportunityName"
+        );
+
+    const opportunityDescription =
+        document.getElementById(
+            "opportunityDescription"
+        );
+
+    const opportunityUrl =
+        document.getElementById(
+            "opportunityUrl"
+        );
+
+    const opportunityStatus =
+        document.getElementById(
+            "opportunityStatus"
+        );
+
+    const defaultLanguage =
+        document.getElementById(
+            "defaultLanguage"
+        );
+
+    const prelaunchEnabled =
+        document.getElementById(
+            "prelaunchEnabled"
+        );
+
+    const publicOpen =
+        document.getElementById(
+            "publicOpen"
+        );
+
+    const submitButton =
+        document.getElementById(
+            "submitButton"
+        );
+
+    const formMessage =
+        document.getElementById(
+            "formMessage"
+        );
+
+
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+
+    const languages = {
+        fr: "Français",
+        en: "Anglais",
+        es: "Espagnol",
+        pt: "Portugais",
+        ar: "Arabe",
+        hi: "Hindi"
+    };
+
+    let editingOpportunityId =
+        null;
+
+
+    // ============================================================
+    // ÉVÉNEMENTS
+    // ============================================================
+
+    openAddModalButton.addEventListener(
+        "click",
+        openAddModal
+    );
+
+    closeModalButton.addEventListener(
+        "click",
+        closeModal
+    );
+
+    opportunityForm.addEventListener(
+        "submit",
+        saveOpportunity
+    );
+
+    opportunityModal.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target ===
+                opportunityModal
+            ) {
+                closeModal();
+            }
+        }
+    );
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape" &&
+                opportunityModal.classList.contains(
+                    "visible"
+                )
+            ) {
+                closeModal();
+            }
+        }
+    );
+
+
+    // ============================================================
+    // CHARGER LES OPPORTUNITÉS
+    // ============================================================
+
+    async function loadOpportunities() {
+
+        try {
+
+            pageMessage.textContent =
+                "Chargement des opportunités...";
+
+            opportunitiesList.innerHTML =
+                "";
+
+            const data =
+                await adminApiCall(
+                    "/admin/opportunities",
+                    {
+                        method: "GET"
+                    }
+                );
+
+            const opportunities =
+                Array.isArray(
+                    data.opportunities
+                )
+                    ? data.opportunities
+                    : Array.isArray(data)
+                        ? data
+                        : [];
+
+            opportunitiesList.innerHTML =
+                "";
+
+            opportunities.forEach(
+                function (opportunity) {
+
+                    const card =
+                        createOpportunityCard(
+                            opportunity
+                        );
+
+                    opportunitiesList.appendChild(
+                        card
+                    );
+                }
+            );
+
+            pageMessage.textContent =
+                "";
+
+            updateEmptyState();
+
+        } catch (error) {
+
+            console.error(
+                "Erreur chargement opportunités :",
+                error
+            );
+
+            showAdminMessage(
+                pageMessage,
+                error.message ||
+                "Impossible de charger les opportunités."
+            );
+
+            handleAuthenticationError(
+                error
+            );
+
+            updateEmptyState();
+        }
+    }
+
+
+    // ============================================================
+    // OUVRIR LE FORMULAIRE D’AJOUT
+    // ============================================================
+
+    function openAddModal() {
+
+        editingOpportunityId =
+            null;
+
+        opportunityForm.reset();
+
+        modalTitle.textContent =
+            "Ajouter une opportunité";
+
+        submitButton.textContent =
+            "Ajouter l’opportunité";
+
+        opportunityStatus.value =
+            "draft";
+
+        defaultLanguage.value =
+            "fr";
+
+        formMessage.textContent =
+            "";
+
+        showModal();
+    }
+
+
+    // ============================================================
+    // OUVRIR LE FORMULAIRE DE MODIFICATION
+    // ============================================================
+
+    function openEditModal(
+        opportunity
+    ) {
+
+        const id =
+            Number(
+                opportunity.id
+            );
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+
+            showAdminMessage(
+                pageMessage,
+                "Impossible de modifier cette opportunité."
+            );
+
+            return;
+        }
+
+        editingOpportunityId =
+            id;
+
+        modalTitle.textContent =
+            "Modifier l’opportunité";
+
+        submitButton.textContent =
+            "Enregistrer les modifications";
+
+        opportunityName.value =
+            opportunity.name || "";
+
+        opportunityDescription.value =
+            opportunity.description || "";
+
+        opportunityUrl.value =
+            opportunity.opportunity_url ||
+            opportunity
     <script>
 
         protectAdminPage();
