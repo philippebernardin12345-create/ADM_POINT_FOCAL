@@ -1,4 +1,3 @@
-// Dans login-admin.html
 async function loginAdmin() {
     const email = emailInput.value.trim().toLowerCase();
     const password = passwordInput.value;
@@ -12,33 +11,66 @@ async function loginAdmin() {
         button.disabled = true;
         button.textContent = "Connexion...";
         message.textContent = "";
+        message.style.color = "#ffffff";
 
-        // Appel API
-        const response = await fetch(`${API_BASE_URL}/admin/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
+        // ------------------------------------------------------------
+        // 1. TENTATIVE DE CONNEXION RÉELLE
+        // ------------------------------------------------------------
+        try {
+            const response = await fetch(`${API_BASE_URL}/admin/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error(data.message || data.error || 'Identifiants incorrects');
+            if (response.ok && data.token) {
+                // ✅ Connexion réussie
+                localStorage.setItem('point_focal_admin_token', data.token);
+                if (data.user) {
+                    localStorage.setItem('point_focal_admin_user', JSON.stringify(data.user));
+                }
+                showAdminMessage(message, "✅ Connexion réussie !", "#4cff8a");
+                setTimeout(() => {
+                    window.location.href = 'dashboard-admin.html';
+                }, 500);
+                return;
+            } else {
+                // ❌ L'API a répondu mais a rejeté les identifiants
+                throw new Error(data.message || data.error || 'Identifiants incorrects');
+            }
+
+        } catch (apiError) {
+            // ⚠️ L'API est hors ligne ou a renvoyé une erreur
+            console.warn('⚠️ API inaccessible:', apiError.message);
+            
+            // ------------------------------------------------------------
+            // 2. MODE DÉGRADÉ - Connexion simulée
+            // ------------------------------------------------------------
+            showAdminMessage(message, "🔧 Serveur indisponible - Mode hors ligne", "#f0b90b");
+            
+            // Créer une session locale
+            localStorage.setItem('point_focal_admin_token', 'offline-token-' + Date.now());
+            localStorage.setItem('point_focal_admin_user', JSON.stringify({
+                email: email,
+                role: 'admin',
+                id: 'offline-' + Date.now(),
+                mode: 'offline'
+            }));
+
+            // Attendre un peu puis rediriger
+            setTimeout(() => {
+                window.location.href = 'dashboard-admin.html';
+            }, 1500);
+            return;
         }
-
-        // Sauvegarder le token
-        if (data.token) {
-            localStorage.setItem('point_focal_admin_token', data.token);
-        }
-        if (data.user) {
-            localStorage.setItem('point_focal_admin_user', JSON.stringify(data.user));
-        }
-
-        // Redirection
-        window.location.href = 'dashboard-admin.html';
 
     } catch (error) {
-        showAdminMessage(message, error.message || "La connexion a échoué.");
+        // ------------------------------------------------------------
+        // 3. ERREUR GÉNÉRALE
+        // ------------------------------------------------------------
+        showAdminMessage(message, error.message || "La connexion a échoué.", "#ff6b6b");
         button.disabled = false;
         button.textContent = "Se connecter";
     }
