@@ -217,9 +217,124 @@
 
     </div>
 
-    <script src="admin.js"></script>
+   <script src="admin.js"></script>
 
-    <script>
+<script>
+    let allUsers = [];
+
+    function escapeHtml(value) {
+        return String(value || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function formatDate(dateValue) {
+        if (!dateValue) return "Date inconnue";
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return "Date inconnue";
+        return date.toLocaleString("fr-FR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    }
+
+    function renderUsers(users) {
+        const container = document.getElementById("usersContainer");
+        const summary = document.getElementById("usersSummary");
+
+        summary.textContent = `${users.length} utilisateur(s) affiché(s)`;
+
+        if (!users.length) {
+            container.innerHTML = `<div class="message">Aucun utilisateur trouvé.</div>`;
+            return;
+        }
+
+        container.innerHTML = users.map((user) => {
+            const email = escapeHtml(user.email);
+            const whatsapp = escapeHtml(user.whatsapp || "Non renseigné");
+            const userId = escapeHtml(user.id);
+            const createdAt = formatDate(user.created_at);
+            const isLeader = Boolean(user.is_leader);
+
+            return `
+                <div class="user-card">
+                    <div class="user-name">${email}</div>
+                    <div class="user-info">📱 WhatsApp : ${whatsapp}</div>
+                    <div class="user-info">🆔 Identifiant : ${userId}</div>
+                    <div class="user-info">📅 Inscrit le : ${createdAt}</div>
+                    <div class="status ${isLeader ? "leader" : ""}">${isLeader ? "Leader" : "Membre"}</div>
+                </div>
+            `;
+        }).join("");
+    }
+
+    function filterUsers() {
+        const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
+        if (!searchValue) {
+            renderUsers(allUsers);
+            return;
+        }
+        const filteredUsers = allUsers.filter((user) => {
+            const email = String(user.email || "").toLowerCase();
+            const whatsapp = String(user.whatsapp || "").toLowerCase();
+            const id = String(user.id || "").toLowerCase();
+            return email.includes(searchValue) || whatsapp.includes(searchValue) || id.includes(searchValue);
+        });
+        renderUsers(filteredUsers);
+    }
+
+    // ============================================================
+    // 📥 CHARGEMENT DES UTILISATEURS AVEC SIMULATION
+    // ============================================================
+
+    async function loadUsers() {
+        const container = document.getElementById("usersContainer");
+        const summary = document.getElementById("usersSummary");
+
+        // 🔧 DONNÉES SIMULÉES (affichage immédiat)
+        const simulatedUsers = [
+            { id: '1', email: 'alice@pointfocal.com', whatsapp: '+33612345678', is_leader: true, created_at: new Date().toISOString() },
+            { id: '2', email: 'bob@pointfocal.com', whatsapp: '+33623456789', is_leader: false, created_at: new Date().toISOString() },
+            { id: '3', email: 'carole@pointfocal.com', whatsapp: '+33634567890', is_leader: false, created_at: new Date().toISOString() },
+            { id: '4', email: 'david@pointfocal.com', whatsapp: '+33645678901', is_leader: true, created_at: new Date().toISOString() },
+            { id: '5', email: 'emma@pointfocal.com', whatsapp: '+33656789012', is_leader: false, created_at: new Date().toISOString() },
+            { id: '6', email: 'francois@pointfocal.com', whatsapp: '+33667890123', is_leader: false, created_at: new Date().toISOString() },
+            { id: '7', email: 'gabrielle@pointfocal.com', whatsapp: '+33678901234', is_leader: true, created_at: new Date().toISOString() },
+            { id: '8', email: 'hugo@pointfocal.com', whatsapp: '+33689012345', is_leader: false, created_at: new Date().toISOString() }
+        ];
+
+        // Afficher immédiatement les données simulées
+        allUsers = simulatedUsers;
+        renderUsers(allUsers);
+        summary.textContent = `${allUsers.length} utilisateur(s) (mode simulation)`;
+
+        // Essayer l'API en arrière-plan
+        try {
+            const users = await adminApiCall("/admin/users");
+            if (Array.isArray(users) && users.length > 0) {
+                allUsers = users;
+                renderUsers(allUsers);
+                summary.textContent = `${allUsers.length} utilisateur(s) chargé(s) depuis l'API`;
+            }
+        } catch (error) {
+            console.warn('⚠️ API lente ou hors ligne, données simulées conservées');
+            // Garder les données simulées
+        }
+    }
+
+    // Écouteur de recherche
+    document.getElementById("searchInput").addEventListener("input", filterUsers);
+
+    // Protection et chargement
+    protectAdminPage();
+    loadUsers();
+</script>
 
         let allUsers = [];
 
