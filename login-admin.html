@@ -1,388 +1,45 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
+// Dans login-admin.html
+async function loginAdmin() {
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    if (!email || !password) {
+        showAdminMessage(message, "Entre ton email et ton mot de passe.");
+        return;
+    }
 
-    <title>Connexion administrateur</title>
+    try {
+        button.disabled = true;
+        button.textContent = "Connexion...";
+        message.textContent = "";
 
-    <style>
-        * {
-            box-sizing: border-box;
+        // Appel API
+        const response = await fetch(`${API_BASE_URL}/admin/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || data.error || 'Identifiants incorrects');
         }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            background: #0b0e11;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
+        // Sauvegarder le token
+        if (data.token) {
+            localStorage.setItem('point_focal_admin_token', data.token);
+        }
+        if (data.user) {
+            localStorage.setItem('point_focal_admin_user', JSON.stringify(data.user));
         }
 
-        .card {
-            width: 100%;
-            max-width: 420px;
-            background: #1e2329;
-            padding: 30px;
-            border-radius: 14px;
-            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.45);
-        }
-
-        h2 {
-            margin-top: 0;
-            margin-bottom: 25px;
-            text-align: center;
-            color: #f0b90b;
-        }
-
-        .field {
-            margin-bottom: 15px;
-        }
-
-        input {
-            width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #333b44;
-            border-radius: 8px;
-            outline: none;
-            background: #111418;
-            color: #ffffff;
-            font-size: 15px;
-        }
-
-        input:focus {
-            border-color: #f0b90b;
-        }
-
-        input::placeholder {
-            color: #7f8994;
-        }
-
-        .password-wrapper {
-            position: relative;
-        }
-
-        .password-wrapper input {
-            padding-right: 52px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            top: 50%;
-            right: 8px;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            margin: 0;
-            border: none;
-            border-radius: 7px;
-            background: transparent;
-            color: #ffffff;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        .toggle-password:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .login-button {
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 8px;
-            background: #f0b90b;
-            color: #000000;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .login-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .login-message {
-            min-height: 22px;
-            margin-top: 15px;
-            text-align: center;
-            color: #ff6b6b;
-            line-height: 1.4;
-        }
-
-        .message {
-            margin-top: 18px;
-            text-align: center;
-            color: #9aa4af;
-            font-size: 14px;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="card">
-
-        <h2>
-            Connexion administrateur
-        </h2>
-
-        <div class="field">
-            <input
-                id="adminEmail"
-                type="email"
-                placeholder="Email administrateur"
-                autocomplete="email"
-            >
-        </div>
-
-        <div class="field password-wrapper">
-
-            <input
-                id="adminPassword"
-                type="password"
-                placeholder="Mot de passe"
-                autocomplete="current-password"
-            >
-
-            <button
-                id="togglePasswordButton"
-                class="toggle-password"
-                type="button"
-                aria-label="Afficher le mot de passe"
-                title="Afficher le mot de passe"
-            >
-                👁
-            </button>
-
-        </div>
-
-        <button
-            id="loginButton"
-            class="login-button"
-            type="button"
-        >
-            Se connecter
-        </button>
-
-        <div
-            id="loginMessage"
-            class="login-message"
-        ></div>
-
-        <div class="message">
-            Tableau de bord Point Focal Admin V1
-        </div>
-
-    </div>
-
-    <script src="admin.js?v=4"></script>
-
-    <script>
-        const button =
-            document.getElementById(
-                "loginButton"
-            );
-
-        const emailInput =
-            document.getElementById(
-                "adminEmail"
-            );
-
-        const passwordInput =
-            document.getElementById(
-                "adminPassword"
-            );
-
-        const togglePasswordButton =
-            document.getElementById(
-                "togglePasswordButton"
-            );
-
-        const message =
-            document.getElementById(
-                "loginMessage"
-            );
-
-
-        button.addEventListener(
-            "click",
-            loginAdmin
-        );
-
-
-        emailInput.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (event.key === "Enter") {
-                    loginAdmin();
-                }
-            }
-        );
-
-
-        passwordInput.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (event.key === "Enter") {
-                    loginAdmin();
-                }
-            }
-        );
-
-
-        togglePasswordButton.addEventListener(
-            "click",
-            function () {
-
-                const passwordIsHidden =
-                    passwordInput.type ===
-                    "password";
-
-
-                passwordInput.type =
-                    passwordIsHidden
-                        ? "text"
-                        : "password";
-
-
-                togglePasswordButton.textContent =
-                    passwordIsHidden
-                        ? "🙈"
-                        : "👁";
-
-
-                togglePasswordButton.setAttribute(
-                    "aria-label",
-                    passwordIsHidden
-                        ? "Masquer le mot de passe"
-                        : "Afficher le mot de passe"
-                );
-
-
-                togglePasswordButton.title =
-                    passwordIsHidden
-                        ? "Masquer le mot de passe"
-                        : "Afficher le mot de passe";
-
-
-                passwordInput.focus();
-            }
-        );
-
-
-        async function loginAdmin() {
-
-            const email =
-                emailInput.value
-                    .trim()
-                    .toLowerCase();
-
-            const password =
-                passwordInput.value;
-
-
-            if (!email || !password) {
-
-                showAdminMessage(
-                    message,
-                    "Entre ton email et ton mot de passe."
-                );
-
-                return;
-            }
-
-
-            try {
-
-                button.disabled = true;
-
-                togglePasswordButton.disabled = true;
-
-                button.textContent =
-                    "Connexion...";
-
-                message.textContent = "";
-
-
-                const data =
-                    await adminApiCall(
-                        "/admin/login",
-                        {
-                            method: "POST",
-
-                            body: JSON.stringify({
-                                email,
-                                password
-                            })
-                        }
-                    );
-
-
-                const token =
-                    data.token
-                    || data.accessToken
-                    || data.access_token
-                    || data.data?.token;
-
-
-                const user =
-                    data.user
-                    || data.admin
-                    || data.data?.user
-                    || data.data?.admin;
-
-
-                if (!token) {
-
-                    throw new Error(
-                        "Le backend n'a retourné aucun token."
-                    );
-                }
-
-
-                saveAdminToken(token);
-
-
-                if (user) {
-                    saveAdminUser(user);
-                }
-
-
-                window.location.href =
-                    "dashboard-admin.html";
-
-            } catch (error) {
-
-                showAdminMessage(
-                    message,
-                    error.message
-                    || "La connexion a échoué."
-                );
-
-            } finally {
-
-                button.disabled = false;
-
-                togglePasswordButton.disabled = false;
-
-                button.textContent =
-                    "Se connecter";
-            }
-        }
-    </script>
-
-</body>
-</html>
+        // Redirection
+        window.location.href = 'dashboard-admin.html';
+
+    } catch (error) {
+        showAdminMessage(message, error.message || "La connexion a échoué.");
+        button.disabled = false;
+        button.textContent = "Se connecter";
+    }
+}
