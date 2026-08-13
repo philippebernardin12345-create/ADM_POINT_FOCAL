@@ -783,3 +783,100 @@
 
 </body>
 </html>
+<script>
+// Suite du script opportunités
+async function submitOpportunityForm(event) {
+    event.preventDefault();
+    
+    const formData = {
+        name: opportunityName.value.trim(),
+        description: opportunityDescription.value.trim(),
+        url: opportunityUrl.value.trim(),
+        status: opportunityStatus.value,
+        default_language: defaultLanguage.value,
+        prelaunch_enabled: prelaunchEnabled.checked,
+        public_open: publicOpen.checked
+    };
+    
+    // Validation
+    if (!formData.name) {
+        formMessage.textContent = 'Le nom est requis';
+        formMessage.style.color = '#ff6b6b';
+        return;
+    }
+    
+    try {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Envoi...';
+        formMessage.textContent = '';
+        
+        let response;
+        if (editingOpportunityId) {
+            response = await adminApiCall(`/admin/opportunities/${editingOpportunityId}`, {
+                method: 'PUT',
+                body: JSON.stringify(formData)
+            });
+        } else {
+            response = await adminApiCall('/admin/opportunities', {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
+        }
+        
+        formMessage.textContent = editingOpportunityId ? '✅ Modifié avec succès' : '✅ Créé avec succès';
+        formMessage.style.color = '#4cff8a';
+        
+        closeModal();
+        loadOpportunities();
+        
+    } catch (error) {
+        formMessage.textContent = '❌ ' + (error.message || 'Erreur lors de l\'enregistrement');
+        formMessage.style.color = '#ff6b6b';
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = editingOpportunityId ? 'Modifier' : 'Ajouter';
+    }
+}
+
+// Gestion du modal
+function openModal(opportunity = null) {
+    editingOpportunityId = opportunity?.id || null;
+    modalTitle.textContent = editingOpportunityId ? 'Modifier l\'opportunité' : 'Ajouter une opportunité';
+    submitButton.textContent = editingOpportunityId ? 'Modifier' : 'Ajouter';
+    
+    if (opportunity) {
+        opportunityName.value = opportunity.name || '';
+        opportunityDescription.value = opportunity.description || '';
+        opportunityUrl.value = opportunity.url || '';
+        opportunityStatus.value = opportunity.status || 'draft';
+        defaultLanguage.value = opportunity.default_language || 'fr';
+        prelaunchEnabled.checked = opportunity.prelaunch_enabled || false;
+        publicOpen.checked = opportunity.public_open || false;
+    } else {
+        opportunityForm.reset();
+        opportunityStatus.value = 'draft';
+        defaultLanguage.value = 'fr';
+    }
+    
+    formMessage.textContent = '';
+    opportunityModal.classList.add('visible');
+    document.body.classList.add('modal-open');
+}
+
+function closeModal() {
+    opportunityModal.classList.remove('visible');
+    document.body.classList.remove('modal-open');
+    editingOpportunityId = null;
+}
+
+// Écouteurs d'événements
+openAddModalButton.addEventListener('click', () => openModal());
+closeModalButton.addEventListener('click', closeModal);
+opportunityModal.addEventListener('click', (e) => {
+    if (e.target === opportunityModal) closeModal();
+});
+opportunityForm.addEventListener('submit', submitOpportunityForm);
+
+// Chargement initial
+loadOpportunities();
+</script>
