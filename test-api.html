@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Mobile</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            background: #0b0e11;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .box {
+            background: #1e2329;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #f0b90b;
+        }
+        .ok { border-left-color: #4cff8a; }
+        .err { border-left-color: #ff6b6b; }
+        button {
+            width: 100%;
+            padding: 15px;
+            margin: 5px 0;
+            background: #f0b90b;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:active { opacity: 0.7; }
+        .btn-gray { background: #2b3139; color: white; }
+        pre {
+            background: #111418;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Diagnostic API</h1>
+    
+    <button onclick="testHealth()">📡 Tester API</button>
+    <button onclick="testLogin()">🔑 Tester Login</button>
+    <button onclick="testDashboard()">📊 Tester Dashboard</button>
+    <button onclick="createAdmin()">👤 Créer Admin</button>
+    <button class="btn-gray" onclick="clearAll()">🗑️ Réinitialiser</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'https://point-focal.onrender.com/api';
+        
+        function log(msg, isError = false) {
+            const div = document.createElement('div');
+            div.className = `box ${isError ? 'err' : 'ok'}`;
+            div.textContent = msg;
+            document.getElementById('results').prepend(div);
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                log('✅ API accessible: ' + JSON.stringify(data));
+            } catch(e) {
+                log('❌ API inaccessible: ' + e.message, true);
+            }
+        }
+
+        async function testLogin() {
+            const email = prompt('📧 Email admin:');
+            const pass = prompt('🔑 Mot de passe:');
+            if (!email || !pass) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Login réussi! Token: ' + data.token?.substring(0, 20) + '...');
+                    localStorage.setItem('point_focal_admin_token', data.token);
+                    localStorage.setItem('point_focal_admin_user', JSON.stringify(data.user || { email }));
+                } else {
+                    log('❌ Login échoué: ' + (data.message || 'Identifiants incorrects'), true);
+                }
+            } catch(e) {
+                log('❌ Erreur: ' + e.message, true);
+            }
+        }
+
+        async function testDashboard() {
+            const token = localStorage.getItem('point_focal_admin_token');
+            if (!token) {
+                log('❌ Pas de token - Testez le login d\'abord', true);
+                return;
+            }
+            try {
+                const response = await fetch(`${API_URL}/admin/dashboard`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    log('✅ Dashboard: ' + JSON.stringify(data));
+                } else {
+                    log('❌ Dashboard échoué: ' + (data.message || 'Erreur'), true);
+                }
+            } catch(e) {
+                log('❌ Erreur: ' + e.message, true);
+            }
+        }
+
+        async function createAdmin() {
+            const email = prompt('📧 Email admin:');
+            const pass = prompt('🔑 Mot de passe:');
+            if (!email || !pass) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/admin/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass, role: 'admin' })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Admin créé! Connectez-vous maintenant.');
+                } else {
+                    log('❌ Erreur création: ' + (data.message || 'Impossible'), true);
+                }
+            } catch(e) {
+                log('❌ Erreur: ' + e.message, true);
+            }
+        }
+
+        function clearAll() {
+            localStorage.clear();
+            log('🔄 Tout a été réinitialisé');
+        }
+
+        // Test automatique
+        testHealth();
+    </script>
+</body>
+</html>
