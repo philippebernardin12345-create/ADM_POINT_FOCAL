@@ -36,7 +36,7 @@ async function loginAdmin() {
       localStorage.setItem("point_focal_admin_user", JSON.stringify(result.user));
     }
     showMessage("Connexion réussie.", "#4cff8a");
-    window.location.href = "dashboard-admin.html?release=20261009-admin-refresh2";
+    window.location.href = "dashboard-admin-20261009-v3.html";
   } catch (error) {
     showMessage(error.message || "La connexion a échoué.");
     button.disabled = false;
