@@ -187,6 +187,9 @@
             container.innerHTML = users.map((user) => {
                 const email = escapeHtml(user.email);
                 const whatsapp = escapeHtml(user.whatsapp || "Non renseigné");
+                const countryCode = String(user.country_code || "").toUpperCase();
+                const country = countryCode ? escapeHtml(countryCode) : "Non renseigné";
+                const sponsor = escapeHtml(user.sponsor_email || "Parrain non renseigné");
                 const userId = escapeHtml(user.id);
                 const createdAt = formatDate(user.created_at);
                 const isLeader = Boolean(user.is_leader);
@@ -195,6 +198,8 @@
                     <div class="user-card">
                         <div class="user-name">${email}</div>
                         <div class="user-info">📱 WhatsApp : ${whatsapp}</div>
+                        <div class="user-info">🌍 Pays : ${country}</div>
+                        <div class="user-info">🤝 Parrain : ${sponsor}</div>
                         <div class="user-info">🆔 Identifiant : ${userId}</div>
                         <div class="user-info">📅 Inscrit le : ${createdAt}</div>
                         <div class="status ${isLeader ? "leader" : ""}">${isLeader ? "Leader" : "Membre"}</div>
