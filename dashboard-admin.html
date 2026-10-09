@@ -79,6 +79,28 @@
             color: #b7bdc6;
         }
 
+        .admin-action-button {
+            border: 0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            background: #f0b90b;
+            color: #111;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .admin-action-button:disabled {
+            opacity: .6;
+            cursor: wait;
+        }
+
+        #inviteResult a {
+            display: block;
+            margin: 10px 0;
+            color: #f0b90b;
+            overflow-wrap: anywhere;
+        }
+
         .menu {
             position: fixed;
             bottom: 0;
@@ -192,6 +214,21 @@
 
     </div>
 
+        <div class="card" id="prelaunchInviteCard">
+            <h3>Invitations de prélancement</h3>
+            <p>Créez un lien personnel à usage unique pour le prochain leader invité.</p>
+            <button class="admin-action-button" type="button" id="generateInviteButton">
+                Générer un lien d’invitation
+            </button>
+            <p class="status-message" id="inviteMessage" role="status" aria-live="polite"></p>
+            <div id="inviteResult" hidden>
+                <p>Transmettez ce lien uniquement à la personne invitée :</p>
+                <a id="inviteLink" href="#" rel="noopener"></a>
+                <button class="admin-action-button" type="button" id="copyInviteButton">Copier le lien</button>
+            </div>
+        </div>
+    </div>
+
     <div
         class="status-message"
         id="statusMessage"
@@ -223,7 +260,8 @@
 
     </div>
 
-    <script src="admin.js?v=5"></script>
+    <script src="admin.js?v=6"></script>
+    <script src="admin-invitations.js?v=1"></script>
 
 <script>
     protectAdminPage();

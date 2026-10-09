@@ -14,13 +14,9 @@ const ADMIN_CONFIG = {
 
 const SMART_MODE = {
     // ⚠️ METTRE A FALSE EN PRODUCTION
-    ENABLED: true,
-    
-    // ✅ Simule l'API si elle ne répond pas
-    AUTO_SIMULATE: true,
-    
-    // ✅ Force une session admin si aucune n'existe
-    AUTO_LOGIN: true
+    ENABLED: false,
+    AUTO_SIMULATE: false,
+    AUTO_LOGIN: false
 };
 
 // ============================================================
@@ -96,7 +92,7 @@ async function adminApiCall(endpoint, options = {}) {
             throw new Error(data.message || data.error || `Erreur serveur ${response.status}.`);
         }
 
-        return data;
+        return data.data ?? data;
 
     } catch (error) {
         // Si l'API échoue ET que le mode auto-simulation est activé
