@@ -225,7 +225,7 @@ function protectAdminPage() {
 
     // Si pas de token et pas sur la page de login
     if (!token && !isLoginPage) {
-        window.location.href = "login-admin.html";
+        window.location.href = "login-admin.html?release=989f8b9fcc4c";
     }
 }
 
@@ -236,7 +236,7 @@ function protectAdminPage() {
 function logoutAdmin() {
     removeAdminToken();
     removeAdminUser();
-    window.location.href = "login-admin.html";
+    window.location.href = "login-admin.html?release=989f8b9fcc4c";
 }
 
 // ============================================================
