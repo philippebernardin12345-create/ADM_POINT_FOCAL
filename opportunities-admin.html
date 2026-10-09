@@ -1,652 +1,167 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opportunités - Point Focal Admin</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            padding-bottom: 90px;
-            background: #0b0e11;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
-        body.modal-open { overflow: hidden; }
-        .header {
-            padding: 20px;
-            text-align: center;
-            background: #1e2329;
-            border-bottom: 1px solid #2b3139;
-        }
-        .header h1 { margin: 0; color: #f0b90b; font-size: 25px; }
-        .header p { margin: 10px 0 0; color: #b7bdc6; font-size: 14px; }
-        .container {
-            width: 100%;
-            max-width: 850px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .top-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 18px;
-        }
-        .add-button {
-            width: 100%;
-            max-width: 280px;
-            padding: 14px 18px;
-            border: none;
-            border-radius: 10px;
-            background: #f0b90b;
-            color: #000000;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .add-button:hover { background: #ffd43b; }
-        .status-message {
-            min-height: 24px;
-            margin-bottom: 15px;
-            text-align: center;
-            color: #b7bdc6;
-            line-height: 1.5;
-        }
-        .empty-state {
-            display: none;
-            padding: 35px 20px;
-            border: 1px dashed #3a424c;
-            border-radius: 12px;
-            background: #1e2329;
-            text-align: center;
-            color: #b7bdc6;
-        }
-        .opportunities-list {
-            display: grid;
-            gap: 15px;
-        }
-        .card {
-            padding: 18px;
-            border: 1px solid #2b3139;
-            border-radius: 12px;
-            background: #1e2329;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .title {
-            color: #f0b90b;
-            font-size: 19px;
-            font-weight: bold;
-            overflow-wrap: anywhere;
-        }
-        .badge {
-            display: inline-block;
-            flex-shrink: 0;
-            padding: 5px 11px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .badge-active {
-            background: rgba(76, 255, 138, 0.13);
-            color: #4cff8a;
-        }
-        .badge-inactive {
-            background: rgba(255, 107, 107, 0.13);
-            color: #ff6b6b;
-        }
-        .badge-draft {
-            background: rgba(240, 185, 11, 0.13);
-            color: #f0b90b;
-        }
-        .description {
-            margin-bottom: 14px;
-            color: #d1d5db;
-            line-height: 1.55;
-            overflow-wrap: anywhere;
-        }
-        .information-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 10px;
-        }
-        .info {
-            padding: 10px;
-            border-radius: 8px;
-            background: #111418;
-            color: #b7bdc6;
-            font-size: 13px;
-        }
-        .info strong { color: #ffffff; }
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .action-button {
-            padding: 11px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .edit-button {
-            background: #f0b90b;
-            color: #000000;
-        }
-        .toggle-button {
-            background: #d83a3a;
-            color: #ffffff;
-        }
-        .action-button:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-        }
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            display: none;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.78);
-        }
-        .modal-overlay.visible { display: flex; }
-        .modal {
-            width: 100%;
-            max-width: 600px;
-            margin: auto;
-            padding: 22px;
-            border: 1px solid #333b44;
-            border-radius: 14px;
-            background: #1e2329;
-            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.6);
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .modal-header h2 { margin: 0; color: #f0b90b; font-size: 21px; }
-        .close-button {
-            width: 40px;
-            height: 40px;
-            flex-shrink: 0;
-            border: none;
-            border-radius: 8px;
-            background: #111418;
-            color: #ffffff;
-            font-size: 23px;
-            cursor: pointer;
-        }
-        .field { margin-bottom: 16px; }
-        label {
-            display: block;
-            margin-bottom: 7px;
-            color: #d9dde3;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #333b44;
-            border-radius: 9px;
-            outline: none;
-            background: #111418;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            font-size: 15px;
-        }
-        input:focus, textarea:focus, select:focus { border-color: #f0b90b; }
-        textarea { min-height: 110px; resize: vertical; }
-        .checkbox-group {
-            display: grid;
-            gap: 11px;
-            margin-bottom: 20px;
-        }
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 13px;
-            border: 1px solid #333b44;
-            border-radius: 9px;
-            background: #111418;
-        }
-        .checkbox-row input {
-            width: 19px;
-            height: 19px;
-            margin: 0;
-            accent-color: #f0b90b;
-        }
-        .checkbox-row label { margin: 0; cursor: pointer; }
-        .submit-button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 9px;
-            background: #f0b90b;
-            color: #000000;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .submit-button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .form-message {
-            min-height: 24px;
-            margin-top: 15px;
-            text-align: center;
-            line-height: 1.5;
-        }
-        .menu {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            z-index: 50;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            background: #1e2329;
-            border-top: 1px solid #2b3139;
-        }
-        .menu a {
-            padding: 14px 4px;
-            text-align: center;
-            text-decoration: none;
-            color: #ffffff;
-            font-size: 12px;
-        }
-        .menu a:hover, .menu a.active {
-            background: #2b3139;
-            color: #f0b90b;
-        }
-        @media (max-width: 520px) {
-            .top-actions { display: block; }
-            .add-button { max-width: none; }
-            .actions { grid-template-columns: 1fr; }
-            .card-header { flex-direction: column; }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0e11">
+<title>Opportunités — Point Focal Admin</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0e11;--surface:#1e2329;--border:#2b3139;--yellow:#f0b90b;--text:#eaecef;--muted:#a7b0ba;--red:#ff7588;--green:#58d6a5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:0 0 82px;background:var(--bg);color:var(--text);font:16px Arial,sans-serif}
+header{padding:20px 16px;text-align:center;background:var(--surface);border-bottom:1px solid var(--border)}h1{margin:0;color:var(--yellow);font-size:24px}header p{margin:8px 0 0;color:var(--muted)}
+main{width:min(100%,920px);margin:auto;padding:16px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+button{min-height:44px;border:0;border-radius:9px;padding:11px 15px;background:var(--yellow);color:#111;font-weight:700;cursor:pointer}button.secondary{background:#2b3139;color:var(--text);border:1px solid #3b424c}button:disabled{opacity:.6;cursor:wait}
+#pageMessage{min-height:24px;margin:8px 0 12px;color:var(--muted)}#opportunitiesList{display:grid;gap:12px}
+.opp-card{padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}.opp-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}.opp-title h2{margin:0;font-size:18px}
+.badge{border-radius:999px;padding:5px 9px;background:#303740;font-size:12px;font-weight:700}.badge.active{color:var(--green)}.badge.inactive,.badge.draft{color:var(--yellow)}
+.slug{margin:7px 0 12px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}.details{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:12px 0}.detail{padding:9px;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.empty,.error{padding:20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--muted);text-align:center}.error{color:var(--red)}
+dialog{width:min(calc(100% - 24px),520px);max-height:90vh;overflow:auto;padding:0;border:1px solid #3b424c;border-radius:14px;background:var(--surface);color:var(--text)}dialog::backdrop{background:#000b}
+.dialog-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border)}.dialog-header h2{margin:0;color:var(--yellow);font-size:20px}
+form{padding:16px}label{display:block;margin:0 0 6px;color:var(--muted);font-size:14px}.field{margin-bottom:14px}
+input,select{width:100%;min-height:44px;padding:10px;border:1px solid #3b424c;border-radius:8px;background:#111418;color:var(--text);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.check{display:flex;align-items:center;gap:10px;min-height:42px}.check input{width:20px;min-height:20px}
+#formMessage{min-height:22px;margin:10px 0;color:var(--red)}.menu{position:fixed;z-index:5;bottom:0;left:0;width:100%;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--border)}
+.menu a{padding:12px 4px;text-align:center;color:var(--text);text-decoration:none;font-size:12px}.menu a.active{color:var(--yellow)}
+@media(max-width:480px){header{text-align:left}main{padding:12px}.row{grid-template-columns:1fr}}
+</style>
+<script src="admin.js?release=20261009-admin-refresh1" defer></script>
 </head>
 <body>
-
-    <header class="header">
-        <h1>Opportunités</h1>
-        <p>Gestion des opportunités Point Focal</p>
-    </header>
-
-    <main class="container">
-
-        <div class="top-actions">
-            <button id="openAddModalButton" class="add-button" type="button">
-                + Ajouter une opportunité
-            </button>
-        </div>
-
-        <div id="pageMessage" class="status-message"></div>
-        <div id="emptyState" class="empty-state">Aucune opportunité n'est encore affichée.</div>
-        <section id="opportunitiesList" class="opportunities-list"></section>
-
-    </main>
-
-    <!-- MODAL -->
-    <div id="opportunityModal" class="modal-overlay" aria-hidden="true">
-        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <div class="modal-header">
-                <h2 id="modalTitle">Ajouter une opportunité</h2>
-                <button id="closeModalButton" class="close-button" type="button" aria-label="Fermer">×</button>
-            </div>
-            <form id="opportunityForm">
-                <div class="field">
-                    <label for="opportunityName">Nom de l'opportunité</label>
-                    <input id="opportunityName" type="text" placeholder="Exemple : Victory World" maxlength="150" required>
-                </div>
-                <div class="field">
-                    <label for="opportunityDescription">Description</label>
-                    <textarea id="opportunityDescription" placeholder="Décris cette opportunité..." maxlength="1500"></textarea>
-                </div>
-                <div class="field">
-                    <label>Lien de l'opportunité</label>
-                    <input id="opportunityUrl" type="url" placeholder="https://www.exemple.com">
-                </div>
-                <div class="field">
-                    <label for="opportunityStatus">Statut</label>
-                    <select id="opportunityStatus">
-                        <option value="draft">Brouillon</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="active">Active</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label for="defaultLanguage">Langue par défaut</label>
-                    <select id="defaultLanguage">
-                        <option value="fr">Français</option>
-                        <option value="en">Anglais</option>
-                        <option value="es">Espagnol</option>
-                        <option value="pt">Portugais</option>
-                        <option value="ar">Arabe</option>
-                        <option value="hi">Hindi</option>
-                    </select>
-                </div>
-                <div class="checkbox-group">
-                    <div class="checkbox-row">
-                        <input id="prelaunchEnabled" type="checkbox">
-                        <label for="prelaunchEnabled">Activer le pré-lancement</label>
-                    </div>
-                    <div class="checkbox-row">
-                        <input id="publicOpen" type="checkbox">
-                        <label for="publicOpen">Ouvrir au public</label>
-                    </div>
-                </div>
-                <button id="submitButton" class="submit-button" type="submit">Ajouter l'opportunité</button>
-                <div id="formMessage" class="form-message"></div>
-            </form>
-        </section>
+<header><h1>Opportunités</h1><p>Gérez le registre qui alimente le parcours POINT FOCAL.</p></header>
+<main>
+  <div class="toolbar"><div>Les données affichées viennent du registre serveur.</div><button id="openAddModalButton" type="button">Ajouter</button></div>
+  <p id="pageMessage" role="status" aria-live="polite">Chargement du registre…</p>
+  <section id="opportunitiesList" aria-live="polite"></section>
+</main>
+<dialog id="opportunityModal" aria-labelledby="modalTitle">
+  <div class="dialog-header"><h2 id="modalTitle">Ajouter une opportunité</h2><button id="closeModalButton" class="secondary" type="button">Fermer</button></div>
+  <form id="opportunityForm">
+    <div class="field"><label for="opportunityName">Nom</label><input id="opportunityName" required maxlength="120"></div>
+    <div class="field"><label for="opportunitySlug">Slug unique</label><input id="opportunitySlug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="120" autocomplete="off"></div>
+    <div class="row">
+      <div class="field"><label for="opportunityStatus">Statut</label><select id="opportunityStatus"><option value="DRAFT">Brouillon</option><option value="INACTIVE">Inactive</option><option value="ACTIVE">Active</option></select></div>
+      <div class="field"><label for="opportunityPosition">Position</label><input id="opportunityPosition" type="number" min="1" step="1" required></div>
     </div>
-
-    <nav class="menu">
-        <a href="dashboard-admin.html">📊<br>Tableau</a>
-        <a href="users-admin.html">👥<br>Utilisateurs</a>
-        <a href="opportunities-admin.html" class="active">🎯<br>Opportunités</a>
-        <a href="settings-admin.html">⚙️<br>Paramètres</a>
-    </nav>
-
-    <script src="admin.js"></script>
-
-    <script>
-        // ============================================================
-        // ÉLÉMENTS
-        // ============================================================
-        const openAddModalButton = document.getElementById("openAddModalButton");
-        const closeModalButton = document.getElementById("closeModalButton");
-        const opportunityModal = document.getElementById("opportunityModal");
-        const opportunityForm = document.getElementById("opportunityForm");
-        const modalTitle = document.getElementById("modalTitle");
-        const opportunityName = document.getElementById("opportunityName");
-        const opportunityDescription = document.getElementById("opportunityDescription");
-        const opportunityUrl = document.getElementById("opportunityUrl");
-        const opportunityStatus = document.getElementById("opportunityStatus");
-        const defaultLanguage = document.getElementById("defaultLanguage");
-        const prelaunchEnabled = document.getElementById("prelaunchEnabled");
-        const publicOpen = document.getElementById("publicOpen");
-        const submitButton = document.getElementById("submitButton");
-        const formMessage = document.getElementById("formMessage");
-        const pageMessage = document.getElementById("pageMessage");
-        const emptyState = document.getElementById("emptyState");
-        const opportunitiesList = document.getElementById("opportunitiesList");
-
-        let opportunities = [];
-        let editingOpportunityId = null;
-
-        // ============================================================
-        // DONNÉES SIMULÉES
-        // ============================================================
-        const simulatedOpportunities = [
-            {
-                id: 'opp-1',
-                name: 'Victory World',
-                description: 'Opportunité internationale de croissance pour les leaders',
-                status: 'active',
-                default_language: 'fr',
-                prelaunch_enabled: true,
-                public_open: false,
-                url: 'https://victory-world.com'
-            },
-            {
-                id: 'opp-2',
-                name: 'Eco Green Project',
-                description: 'Projet écologique pour les entreprises responsables',
-                status: 'draft',
-                default_language: 'en',
-                prelaunch_enabled: false,
-                public_open: true,
-                url: 'https://eco-green.com'
-            },
-            {
-                id: 'opp-3',
-                name: 'Digital Academy',
-                description: 'Formation numérique pour les leaders de demain',
-                status: 'inactive',
-                default_language: 'fr',
-                prelaunch_enabled: true,
-                public_open: false,
-                url: 'https://digital-academy.com'
-            }
-        ];
-
-        // ============================================================
-        // FONCTIONS
-        // ============================================================
-        function escapeHtml(value) {
-            return String(value || "")
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-        }
-
-        function renderOpportunities(opps) {
-            if (!opps || opps.length === 0) {
-                emptyState.style.display = 'block';
-                opportunitiesList.innerHTML = '';
-                return;
-            }
-            emptyState.style.display = 'none';
-            opportunitiesList.innerHTML = opps.map(opp => `
-                <div class="card" data-id="${opp.id}">
-                    <div class="card-header">
-                        <span class="title">${escapeHtml(opp.name)}</span>
-                        <span class="badge badge-${opp.status}">${opp.status}</span>
-                    </div>
-                    <div class="description">${escapeHtml(opp.description || '')}</div>
-                    <div class="information-grid">
-                        <div class="info"><strong>Langue :</strong> ${opp.default_language || 'fr'}</div>
-                        <div class="info"><strong>Pré-lancement :</strong> ${opp.prelaunch_enabled ? '✅' : '❌'}</div>
-                        <div class="info"><strong>Public :</strong> ${opp.public_open ? '✅' : '❌'}</div>
-                    </div>
-                    <div class="actions">
-                        <button class="action-button edit-button" onclick="editOpportunity('${opp.id}')">✏️ Modifier</button>
-                        <button class="action-button toggle-button" onclick="toggleOpportunity('${opp.id}')">
-                            ${opp.status === 'active' ? '⏸️ Désactiver' : '▶️ Activer'}
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ============================================================
-        // CHARGEMENT AVEC SIMULATION
-        // ============================================================
-        async function loadOpportunities() {
-            // Afficher immédiatement les données simulées
-            opportunities = simulatedOpportunities;
-            renderOpportunities(opportunities);
-            pageMessage.textContent = `${opportunities.length} opportunité(s) (mode simulation)`;
-            pageMessage.style.color = '#f0b90b';
-
-            // Essayer l'API en arrière-plan
-            try {
-                const data = await adminApiCall('/admin/opportunities');
-                if (Array.isArray(data) && data.length > 0) {
-                    opportunities = data;
-                    renderOpportunities(opportunities);
-                    pageMessage.textContent = `${opportunities.length} opportunité(s) chargées depuis l'API`;
-                    pageMessage.style.color = '#4cff8a';
-                }
-            } catch (error) {
-                console.warn('⚠️ API lente ou hors ligne, données simulées conservées');
-            }
-        }
-
-        // ============================================================
-        // MODAL
-        // ============================================================
-        function openModal(opportunity = null) {
-            editingOpportunityId = opportunity?.id || null;
-            modalTitle.textContent = editingOpportunityId ? 'Modifier l\'opportunité' : 'Ajouter une opportunité';
-            submitButton.textContent = editingOpportunityId ? 'Modifier' : 'Ajouter';
-
-            if (opportunity) {
-                opportunityName.value = opportunity.name || '';
-                opportunityDescription.value = opportunity.description || '';
-                opportunityUrl.value = opportunity.url || '';
-                opportunityStatus.value = opportunity.status || 'draft';
-                defaultLanguage.value = opportunity.default_language || 'fr';
-                prelaunchEnabled.checked = opportunity.prelaunch_enabled || false;
-                publicOpen.checked = opportunity.public_open || false;
-            } else {
-                opportunityForm.reset();
-                opportunityStatus.value = 'draft';
-                defaultLanguage.value = 'fr';
-            }
-
-            formMessage.textContent = '';
-            opportunityModal.classList.add('visible');
-            document.body.classList.add('modal-open');
-        }
-
-        function closeModal() {
-            opportunityModal.classList.remove('visible');
-            document.body.classList.remove('modal-open');
-            editingOpportunityId = null;
-        }
-
-        // ============================================================
-        // ÉDITION / TOGGLE
-        // ============================================================
-        async function editOpportunity(id) {
-            const opp = opportunities.find(o => o.id === id);
-            if (opp) openModal(opp);
-        }
-
-        async function toggleOpportunity(id) {
-            const opp = opportunities.find(o => o.id === id);
-            if (!opp) return;
-
-            const newStatus = opp.status === 'active' ? 'inactive' : 'active';
-            
-            try {
-                await adminApiCall(`/admin/opportunities/${id}`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ ...opp, status: newStatus })
-                });
-                
-                // Mettre à jour localement
-                opp.status = newStatus;
-                renderOpportunities(opportunities);
-                pageMessage.textContent = `✅ Statut mis à jour : ${newStatus}`;
-                pageMessage.style.color = '#4cff8a';
-            } catch (error) {
-                // Mode simulation - mise à jour locale
-                opp.status = newStatus;
-                renderOpportunities(opportunities);
-                pageMessage.textContent = `🔧 Simulation : statut mis à jour en ${newStatus}`;
-                pageMessage.style.color = '#f0b90b';
-            }
-        }
-
-        // ============================================================
-        // SUBMIT FORMULAIRE
-        // ============================================================
-        async function submitOpportunityForm(event) {
-            event.preventDefault();
-
-            const formData = {
-                name: opportunityName.value.trim(),
-                description: opportunityDescription.value.trim(),
-                url: opportunityUrl.value.trim(),
-                status: opportunityStatus.value,
-                default_language: defaultLanguage.value,
-                prelaunch_enabled: prelaunchEnabled.checked,
-                public_open: publicOpen.checked
-            };
-
-            if (!formData.name) {
-                formMessage.textContent = 'Le nom est requis';
-                formMessage.style.color = '#ff6b6b';
-                return;
-            }
-
-            try {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Envoi...';
-                formMessage.textContent = '';
-
-                if (editingOpportunityId) {
-                    await adminApiCall(`/admin/opportunities/${editingOpportunityId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(formData)
-                    });
-                    // Mise à jour locale
-                    const index = opportunities.findIndex(o => o.id === editingOpportunityId);
-                    if (index !== -1) {
-                        opportunities[index] = { ...opportunities[index], ...formData };
-                    }
-                } else {
-                    await adminApiCall('/admin/opportunities', {
-                        method: 'POST',
-                        body: JSON.stringify(formData)
-                    });
-                    // Ajout local
-                    const newOpp = { id: 'local-' + Date.now(), ...formData };
-                    opportunities.push(newOpp);
-                }
-
-                formMessage.textContent = editingOpportunityId ? '✅ Modifié avec succès' : '✅ Créé avec succès';
-                formMessage.style.color = '#4cff8a';
-
-                closeModal();
-                loadOpportunities();
-
-            } catch (error) {
-                // Mode simulation - mise à jour locale même si API échoue
-                if (editingOpportunityId) {
-                    const index = opportunities.findIndex(o => o.id === editingOpportunityId);
-                    if (index !== -1) {
-                        opportunities[index] = { ...opportunities[index], ...formData };
-                    }
-                } else {
-                    const newOpp = { id: 'local-' + Date.now(), ...formData };
-                    opportunities.push(newOpp);
-                }
-                renderOpportunities(opportunities);
-                closeModal();
-                pageMessage.textContent = '🔧 Simulation : action effectuée localement';
-                pageMessage.style.color = '#f0b90b';
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = editingOpportunityId ? 'Modifier' : 'Ajouter';
-            }
-        }
-
-        // ============================================================
-        // ÉVÉNEMENTS
-        // ============================================================
-        openAddModalButton.addEventListener('click', () => openModal());
-        closeModalButton.addEventListener('click', closeModal);
-        opportunityModal.addEventListener('click', (e) => {
-            if (e.target === opportunityModal) closeModal();
-        });
-        opportunityForm.addEventListener('submit', submitOpportunityForm);
-
-        protectAdminPage();
-        loadOpportunities();
-    </script>
-
+    <div class="field"><label for="opportunityPriority">Priorité</label><input id="opportunityPriority" type="number" min="1" step="1" value="1" required></div>
+    <div class="check"><input id="isEntry" type="checkbox"><label for="isEntry">Opportunité d’entrée</label></div>
+    <div class="check"><input id="canGenerateLink" type="checkbox"><label for="canGenerateLink">Peut générer un lien Point Focal</label></div>
+    <div class="check"><input id="requiresUserLink" type="checkbox" checked><label for="requiresUserLink">Exige le lien personnel de l’utilisateur</label></div>
+    <div class="check"><input id="rollupEnabled" type="checkbox"><label for="rollupEnabled">Roll-up activé</label></div>
+    <p id="formMessage" role="status" aria-live="polite"></p>
+    <button id="submitButton" type="submit">Enregistrer</button>
+  </form>
+</dialog>
+<nav class="menu" aria-label="Navigation administrateur">
+  <a href="dashboard-admin.html?release=20261009-admin-refresh1">📊<br>Tableau</a>
+  <a href="users-admin.html?release=20261009-admin-refresh1">👥<br>Utilisateurs</a>
+  <a class="active" href="opportunities-admin.html?release=20261009-admin-refresh1">🎯<br>Opportunités</a>
+  <a href="settings-admin.html?release=20261009-admin-refresh1">⚙️<br>Compte</a>
+</nav>
+<script>
+protectAdminPage();
+const list=document.getElementById("opportunitiesList");
+const pageMessage=document.getElementById("pageMessage");
+const modal=document.getElementById("opportunityModal");
+const form=document.getElementById("opportunityForm");
+const formMessage=document.getElementById("formMessage");
+let opportunities=[];
+let editingId=null;
+const esc=(value)=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+const slugify=(value)=>String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function renderOpportunities(){
+  if(!opportunities.length){list.innerHTML='<p class="empty">Aucune opportunité enregistrée.</p>';return;}
+  list.innerHTML=opportunities.map((opp)=>{
+    const status=String(opp.status||"UNKNOWN").toUpperCase();
+    return '<article class="opp-card" data-id="'+esc(opp.id)+'">'+
+      '<div class="opp-title"><h2>'+esc(opp.name||"Sans nom")+'</h2><span class="badge '+status.toLowerCase()+'">'+esc(status)+'</span></div>'+
+      '<p class="slug">'+esc(opp.slug||"Slug non renseigné")+' · ID '+esc(opp.id)+'</p>'+
+      '<div class="details">'+
+      '<div class="detail">Position : '+esc(opp.position??"—")+'</div>'+
+      '<div class="detail">Priorité : '+esc(opp.priority??"—")+'</div>'+
+      '<div class="detail">Entrée : '+(opp.is_entry===true?"Oui":"Non")+'</div>'+
+      '<div class="detail">Génère un lien PF : '+(opp.generates_link===true?"Oui":"Non")+'</div>'+
+      '<div class="detail">Lien utilisateur exigé : '+(opp.requires_user_link!==false?"Oui":"Non")+'</div>'+
+      '<div class="detail">Roll-up : '+(opp.rollup_enabled===true?"Oui":"Non")+'</div></div>'+
+      '<div class="actions"><button class="secondary" type="button" data-action="edit">Modifier</button>'+
+      '<button type="button" data-action="toggle">'+(status==="ACTIVE"?"Désactiver":"Activer")+'</button></div></article>';
+  }).join("");
+}
+async function loadOpportunities(){
+  list.innerHTML='<p class="empty">Chargement…</p>';
+  pageMessage.textContent="Lecture du registre…";
+  try{
+    const data=await adminApiCall("/admin/opportunities");
+    if(!Array.isArray(data))throw new Error("Réponse inattendue du serveur.");
+    opportunities=data;renderOpportunities();
+    pageMessage.textContent=data.length+" opportunité(s) chargée(s).";
+    pageMessage.style.color="#58d6a5";
+  }catch(error){
+    opportunities=[];list.innerHTML="";
+    const box=document.createElement("p");box.className="error";box.textContent=error.message||"Impossible de lire le registre.";
+    const retry=document.createElement("button");retry.type="button";retry.textContent="Réessayer";retry.addEventListener("click",loadOpportunities);
+    list.append(box,retry);pageMessage.textContent="Les données de démonstration sont désactivées.";pageMessage.style.color="#ff7588";
+  }
+}
+function openForm(opp=null){
+  editingId=opp?.id??null;form.reset();
+  document.getElementById("modalTitle").textContent=editingId?"Modifier l’opportunité":"Ajouter une opportunité";
+  document.getElementById("opportunityName").value=opp?.name||"";
+  document.getElementById("opportunitySlug").value=opp?.slug||"";
+  document.getElementById("opportunitySlug").dataset.edited=editingId?"true":"";
+  document.getElementById("opportunityStatus").value=String(opp?.status||"DRAFT").toUpperCase();
+  document.getElementById("opportunityPosition").value=opp?.position??(opportunities.length+1);
+  document.getElementById("opportunityPriority").value=opp?.priority??1;
+  document.getElementById("isEntry").checked=opp?.is_entry===true;
+  document.getElementById("canGenerateLink").checked=opp?.generates_link===true;
+  document.getElementById("requiresUserLink").checked=opp?.requires_user_link!==false;
+  document.getElementById("rollupEnabled").checked=opp?.rollup_enabled===true;
+  formMessage.textContent="";modal.showModal();
+}
+document.getElementById("opportunityName").addEventListener("input",(event)=>{
+  const slug=document.getElementById("opportunitySlug");
+  if(!slug.dataset.edited)slug.value=slugify(event.target.value);
+});
+document.getElementById("opportunitySlug").addEventListener("input",(event)=>{event.target.dataset.edited="true";});
+document.getElementById("openAddModalButton").addEventListener("click",()=>openForm());
+document.getElementById("closeModalButton").addEventListener("click",()=>modal.close());
+modal.addEventListener("click",(event)=>{if(event.target===modal)modal.close();});
+list.addEventListener("click",async(event)=>{
+  const button=event.target.closest("button[data-action]");if(!button)return;
+  const card=button.closest("[data-id]");
+  const opp=opportunities.find((item)=>String(item.id)===card?.dataset.id);if(!opp)return;
+  if(button.dataset.action==="edit"){openForm(opp);return;}
+  const nextStatus=String(opp.status||"").toUpperCase()==="ACTIVE"?"INACTIVE":"ACTIVE";
+  if(!window.confirm("Confirmer le passage de "+opp.name+" au statut "+nextStatus+" ?"))return;
+  button.disabled=true;pageMessage.textContent="Mise à jour en cours…";
+  try{
+    await adminApiCall("/admin/opportunities/"+encodeURIComponent(opp.id),{method:"PUT",body:JSON.stringify({status:nextStatus})});
+    await loadOpportunities();pageMessage.textContent="Statut enregistré.";
+  }catch(error){pageMessage.textContent=error.message||"Le statut n’a pas été enregistré.";pageMessage.style.color="#ff7588";button.disabled=false;}
+});
+form.addEventListener("submit",async(event)=>{
+  event.preventDefault();
+  const payload={
+    name:document.getElementById("opportunityName").value.trim(),
+    slug:document.getElementById("opportunitySlug").value.trim().toLowerCase(),
+    status:document.getElementById("opportunityStatus").value,
+    position:Number(document.getElementById("opportunityPosition").value),
+    priority:Number(document.getElementById("opportunityPriority").value),
+    isEntry:document.getElementById("isEntry").checked,
+    canGeneratePointFocalLink:document.getElementById("canGenerateLink").checked,
+    requiresUserLink:document.getElementById("requiresUserLink").checked,
+    rollupEnabled:document.getElementById("rollupEnabled").checked
+  };
+  const submit=document.getElementById("submitButton");submit.disabled=true;submit.textContent="Enregistrement…";formMessage.textContent="";
+  try{
+    const path=editingId?"/admin/opportunities/"+encodeURIComponent(editingId):"/admin/opportunities";
+    await adminApiCall(path,{method:editingId?"PUT":"POST",body:JSON.stringify(payload)});
+    const wasEditing=Boolean(editingId);modal.close();await loadOpportunities();
+    pageMessage.textContent=wasEditing?"Opportunité modifiée.":"Opportunité créée.";pageMessage.style.color="#58d6a5";
+  }catch(error){formMessage.textContent=error.message||"La modification n’a pas été enregistrée.";}
+  finally{submit.disabled=false;submit.textContent="Enregistrer";}
+});
+loadOpportunities();
+</script>
 </body>
 </html>
