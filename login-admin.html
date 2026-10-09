@@ -1,226 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion administrateur</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            background: #0b0e11;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-        }
-        .card {
-            width: 100%;
-            max-width: 420px;
-            background: #1e2329;
-            padding: 30px;
-            border-radius: 14px;
-            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.45);
-        }
-        h2 {
-            margin-top: 0;
-            margin-bottom: 25px;
-            text-align: center;
-            color: #f0b90b;
-        }
-        .field { margin-bottom: 15px; }
-        input {
-            width: 100%;
-            padding: 13px 14px;
-            border: 1px solid #333b44;
-            border-radius: 8px;
-            outline: none;
-            background: #111418;
-            color: #ffffff;
-            font-size: 15px;
-        }
-        input:focus { border-color: #f0b90b; }
-        .login-button {
-            width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 8px;
-            background: #f0b90b;
-            color: #000000;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .login-button:disabled { opacity: 0.6; cursor: not-allowed; }
-        .login-message {
-            min-height: 22px;
-            margin-top: 15px;
-            text-align: center;
-            line-height: 1.4;
-        }
-        .btn-dev {
-            width: 100%;
-            margin-top: 10px;
-            padding: 13px;
-            background: #2b3139;
-            color: #f0b90b;
-            border: 1px solid #f0b90b;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .btn-dev:active { opacity: 0.7; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0e11">
+  <title>Connexion administrateur — Point Focal</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; background: #0b0e11; color: #fff; font: 16px Arial, sans-serif; }
+    main { width: 100%; max-width: 420px; padding: 30px; border-radius: 14px; background: #1e2329; box-shadow: 0 16px 45px #0007; }
+    h1 { margin: 0 0 24px; text-align: center; color: #f0b90b; font-size: 22px; }
+    label { display: block; margin: 0 0 7px; color: #c6ccd3; font-size: 14px; }
+    .field { margin-bottom: 16px; }
+    input { width: 100%; padding: 13px 14px; border: 1px solid #333b44; border-radius: 8px; outline: none; background: #111418; color: #fff; font-size: 15px; }
+    input:focus { border-color: #f0b90b; }
+    button { width: 100%; padding: 13px; border: 0; border-radius: 8px; background: #f0b90b; color: #000; font-size: 15px; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    #loginMessage { min-height: 22px; margin-top: 15px; text-align: center; line-height: 1.4; }
+    .footer { margin: 18px 0 0; text-align: center; color: #9aa4af; font-size: 13px; }
+  </style>
+  <script src="login.js" defer></script>
 </head>
 <body>
-
-<div class="card">
-    <h2>🔐 Connexion administrateur</h2>
-
+  <main>
+    <h1>Connexion administrateur</h1>
     <div class="field">
-        <input id="adminEmail" type="email" placeholder="Email administrateur">
+      <label for="adminEmail">Email administrateur</label>
+      <input id="adminEmail" type="email" autocomplete="username" required>
     </div>
-
     <div class="field">
-        <input id="adminPassword" type="password" placeholder="Mot de passe">
+      <label for="adminPassword">Mot de passe</label>
+      <input id="adminPassword" type="password" autocomplete="current-password" required>
     </div>
-
-    <button id="loginButton" class="login-button">Se connecter</button>
-    <button id="devButton" class="btn-dev">🔓 Accès direct</button>
-
-    <div id="loginMessage" class="login-message"></div>
-
-    <div style="margin-top:18px; text-align:center; color:#9aa4af; font-size:13px;">
-        Point Focal Admin V1
-    </div>
-</div>
-
-<script>
-// ============================================================
-// TOUT LE JAVASCRIPT EST ICI - DANS LES BALISES <script>
-// ============================================================
-
-const API_BASE_URL = "https://point-focal.onrender.com/api";
-
-// Éléments
-const emailInput = document.getElementById('adminEmail');
-const passwordInput = document.getElementById('adminPassword');
-const loginButton = document.getElementById('loginButton');
-const devButton = document.getElementById('devButton');
-const message = document.getElementById('loginMessage');
-
-// Fonction d'affichage des messages
-function showMessage(text, color = "#ff6b6b") {
-    message.textContent = text;
-    message.style.color = color;
-}
-
-// ============================================================
-// LOGIN AVEC MODE DÉGRADÉ
-// ============================================================
-
-async function loginAdmin() {
-    const email = emailInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
-
-    if (!email || !password) {
-        showMessage("Entre ton email et ton mot de passe.");
-        return;
-    }
-
-    try {
-        loginButton.disabled = true;
-        loginButton.textContent = "Connexion...";
-        showMessage("");
-
-        // 1. TENTATIVE API
-        try {
-            const response = await fetch(`${API_BASE_URL}/admin/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.token) {
-                localStorage.setItem('point_focal_admin_token', data.token);
-                if (data.user) {
-                    localStorage.setItem('point_focal_admin_user', JSON.stringify(data.user));
-                }
-                showMessage("✅ Connexion réussie !", "#4cff8a");
-                setTimeout(() => {
-                    window.location.href = 'dashboard-admin.html';
-                }, 500);
-                return;
-            } else {
-                throw new Error(data.message || 'Identifiants incorrects');
-            }
-        } catch (apiError) {
-            console.warn('⚠️ API inaccessible:', apiError.message);
-            
-            // 2. MODE DÉGRADÉ
-            showMessage("🔧 Mode hors ligne - Connexion simulée", "#f0b90b");
-            
-            localStorage.setItem('point_focal_admin_token', 'offline-token-' + Date.now());
-            localStorage.setItem('point_focal_admin_user', JSON.stringify({
-                email: email,
-                role: 'admin',
-                id: 'offline-' + Date.now(),
-                mode: 'offline'
-            }));
-
-            setTimeout(() => {
-                window.location.href = 'dashboard-admin.html';
-            }, 1500);
-            return;
-        }
-
-    } catch (error) {
-        showMessage(error.message || "La connexion a échoué.");
-        loginButton.disabled = false;
-        loginButton.textContent = "Se connecter";
-    }
-}
-
-// ============================================================
-// ACCÈS DIRECT
-// ============================================================
-
-function forceAccess() {
-    localStorage.setItem('point_focal_admin_token', 'force-token-' + Date.now());
-    localStorage.setItem('point_focal_admin_user', JSON.stringify({
-        email: 'admin@force.com',
-        role: 'admin',
-        id: 'force-1'
-    }));
-    showMessage("🚀 Accès direct activé !", "#f0b90b");
-    setTimeout(() => {
-        window.location.href = 'dashboard-admin.html';
-    }, 500);
-}
-
-// ============================================================
-// ÉVÉNEMENTS
-// ============================================================
-
-loginButton.addEventListener('click', loginAdmin);
-devButton.addEventListener('click', forceAccess);
-
-// Touche Entrée
-emailInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginAdmin(); });
-passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginAdmin(); });
-
-// Vérifier si déjà connecté
-if (localStorage.getItem('point_focal_admin_token')) {
-    window.location.href = 'dashboard-admin.html';
-}
-
-console.log('🚀 Page de login chargée');
-</script>
-
+    <button id="loginButton" type="button">Se connecter</button>
+    <div id="loginMessage" role="status" aria-live="polite"></div>
+    <p class="footer">Point Focal Admin</p>
+  </main>
 </body>
 </html>
