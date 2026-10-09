@@ -39,6 +39,7 @@ input,select{width:100%;min-height:44px;padding:10px;border:1px solid #3b424c;bo
   <form id="opportunityForm">
     <div class="field"><label for="opportunityName">Nom</label><input id="opportunityName" required maxlength="120"></div>
     <div class="field"><label for="opportunitySlug">Slug unique</label><input id="opportunitySlug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="120" autocomplete="off"></div>
+    <div class="field"><label for="opportunityUrl">Lien de l’opportunité (HTTPS)</label><input id="opportunityUrl" type="url" inputmode="url" placeholder="https://…" autocomplete="url"></div>
     <div class="row">
       <div class="field"><label for="opportunityStatus">Statut</label><select id="opportunityStatus"><option value="DRAFT">Brouillon</option><option value="INACTIVE">Inactive</option><option value="ACTIVE">Active</option></select></div>
       <div class="field"><label for="opportunityPosition">Position</label><input id="opportunityPosition" type="number" min="1" step="1" required></div>
@@ -49,7 +50,7 @@ input,select{width:100%;min-height:44px;padding:10px;border:1px solid #3b424c;bo
     <div class="check"><input id="requiresUserLink" type="checkbox" checked><label for="requiresUserLink">Exige le lien personnel de l’utilisateur</label></div>
     <div class="check"><input id="rollupEnabled" type="checkbox"><label for="rollupEnabled">Roll-up activé</label></div>
     <p id="formMessage" role="status" aria-live="polite"></p>
-    <button id="submitButton" type="submit">Enregistrer</button>
+    <div class="actions"><button id="submitButton" type="submit">Enregistrer</button><button id="deleteOpportunityButton" class="secondary" type="button" hidden>Supprimer</button></div>
   </form>
 </dialog>
 <nav class="menu" aria-label="Navigation administrateur">
@@ -68,14 +69,17 @@ const formMessage=document.getElementById("formMessage");
 let opportunities=[];
 let editingId=null;
 const esc=(value)=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+const safeHttpsUrl=(value)=>{try{const url=new URL(String(value||""));return url.protocol==="https:"?url.href:"";}catch{return "";}};
 const slugify=(value)=>String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 function renderOpportunities(){
   if(!opportunities.length){list.innerHTML='<p class="empty">Aucune opportunité enregistrée.</p>';return;}
   list.innerHTML=opportunities.map((opp)=>{
     const status=String(opp.status||"UNKNOWN").toUpperCase();
+    const opportunityUrl=safeHttpsUrl(opp.opportunity_url||opp.opportunityUrl);
+    const linkMarkup=opportunityUrl?'<div class="detail">Lien : <a href="'+esc(opportunityUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(opportunityUrl)+'</a></div>':'<div class="detail">Lien : non configuré</div>';
     return '<article class="opp-card" data-id="'+esc(opp.id)+'">'+
       '<div class="opp-title"><h2>'+esc(opp.name||"Sans nom")+'</h2><span class="badge '+status.toLowerCase()+'">'+esc(status)+'</span></div>'+
-      '<p class="slug">'+esc(opp.slug||"Slug non renseigné")+' · ID '+esc(opp.id)+'</p>'+
+      '<p class="slug">'+esc(opp.slug||"Slug non renseigné")+' · ID '+esc(opp.id)+'</p>'+linkMarkup+
       '<div class="details">'+
       '<div class="detail">Position : '+esc(opp.position??"—")+'</div>'+
       '<div class="detail">Priorité : '+esc(opp.priority??"—")+'</div>'+
@@ -84,7 +88,8 @@ function renderOpportunities(){
       '<div class="detail">Lien utilisateur exigé : '+(opp.requires_user_link!==false?"Oui":"Non")+'</div>'+
       '<div class="detail">Roll-up : '+(opp.rollup_enabled===true?"Oui":"Non")+'</div></div>'+
       '<div class="actions"><button class="secondary" type="button" data-action="edit">Modifier</button>'+
-      '<button type="button" data-action="toggle">'+(status==="ACTIVE"?"Désactiver":"Activer")+'</button></div></article>';
+      '<button type="button" data-action="toggle">'+(status==="ACTIVE"?"Désactiver":"Activer")+'</button>'+
+      '<button class="secondary" type="button" data-action="delete">Supprimer</button></div></article>';
   }).join("");
 }
 async function loadOpportunities(){
@@ -108,6 +113,8 @@ function openForm(opp=null){
   document.getElementById("modalTitle").textContent=editingId?"Modifier l’opportunité":"Ajouter une opportunité";
   document.getElementById("opportunityName").value=opp?.name||"";
   document.getElementById("opportunitySlug").value=opp?.slug||"";
+  document.getElementById("opportunityUrl").value=opp?.opportunity_url||opp?.opportunityUrl||"";
+  document.getElementById("deleteOpportunityButton").hidden=!editingId;
   document.getElementById("opportunitySlug").dataset.edited=editingId?"true":"";
   document.getElementById("opportunityStatus").value=String(opp?.status||"DRAFT").toUpperCase();
   document.getElementById("opportunityPosition").value=opp?.position??(opportunities.length+1);
@@ -131,6 +138,15 @@ list.addEventListener("click",async(event)=>{
   const card=button.closest("[data-id]");
   const opp=opportunities.find((item)=>String(item.id)===card?.dataset.id);if(!opp)return;
   if(button.dataset.action==="edit"){openForm(opp);return;}
+  if(button.dataset.action==="delete"){
+    if(!window.confirm("Supprimer définitivement l’opportunité « "+opp.name+" » ?"))return;
+    button.disabled=true;pageMessage.textContent="Suppression en cours…";
+    try{
+      await adminApiCall("/admin/opportunities/"+encodeURIComponent(opp.id),{method:"DELETE"});
+      await loadOpportunities();pageMessage.textContent="Opportunité supprimée.";pageMessage.style.color="#58d6a5";
+    }catch(error){pageMessage.textContent=error.message||"L’opportunité n’a pas pu être supprimée.";pageMessage.style.color="#ff7588";button.disabled=false;}
+    return;
+  }
   const nextStatus=String(opp.status||"").toUpperCase()==="ACTIVE"?"INACTIVE":"ACTIVE";
   if(!window.confirm("Confirmer le passage de "+opp.name+" au statut "+nextStatus+" ?"))return;
   button.disabled=true;pageMessage.textContent="Mise à jour en cours…";
@@ -144,6 +160,7 @@ form.addEventListener("submit",async(event)=>{
   const payload={
     name:document.getElementById("opportunityName").value.trim(),
     slug:document.getElementById("opportunitySlug").value.trim().toLowerCase(),
+    opportunityUrl:document.getElementById("opportunityUrl").value.trim(),
     status:document.getElementById("opportunityStatus").value,
     position:Number(document.getElementById("opportunityPosition").value),
     priority:Number(document.getElementById("opportunityPriority").value),

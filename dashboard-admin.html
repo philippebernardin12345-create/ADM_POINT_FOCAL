@@ -73,11 +73,13 @@
             margin-top: 10px;
         }
 
-        .status-message {
-            padding: 0 20px;
-            text-align: center;
-            color: #b7bdc6;
-        }
+        .status-message { padding: 0 20px; text-align: center; color: #b7bdc6; }
+        .analytics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:15px; padding:20px; }
+        .analytics-card { min-width:0; overflow:auto; background:#1e2329; border:1px solid #2b3139; border-radius:12px; padding:16px; }
+        .analytics-card h2 { margin:0 0 12px; color:#f0b90b; font-size:17px; }
+        .analytics-card table { width:100%; border-collapse:collapse; font-size:13px; }
+        .analytics-card th,.analytics-card td { padding:9px 7px; border-bottom:1px solid #2b3139; text-align:left; vertical-align:top; }
+        .analytics-card th { color:#b7bdc6; }
 
         .admin-action-button {
             border: 0;
@@ -227,6 +229,17 @@
         </div>
     </div>
 
+    <section class="analytics-grid" aria-label="Statistiques détaillées">
+      <article class="analytics-card">
+        <h2>Utilisateurs par pays</h2>
+        <div id="countryStats">Chargement…</div>
+      </article>
+      <article class="analytics-card">
+        <h2>Statistiques par leader</h2>
+        <div id="leaderStats">Chargement…</div>
+      </article>
+    </section>
+
     <div
         class="status-message"
         id="statusMessage"
@@ -264,6 +277,39 @@
 <script>
     protectAdminPage();
 
+    function renderCountryStats(rows) {
+        const container = document.getElementById("countryStats");
+        if (!Array.isArray(rows) || !rows.length) {
+            container.textContent = "Aucune donnée de pays disponible.";
+            return;
+        }
+        const names = new Intl.DisplayNames(["fr"], { type: "region" });
+        const body = rows.map((row) => {
+            const code = String(row.country_code || "UN").toUpperCase();
+            const country = code === "UN" ? "Non renseigné" : (names.of(code) || code);
+            return "<tr><td>" + escapeHtml(country) + "</td><td>" + Number(row.users || 0) +
+                "</td><td>" + Number(row.leaders || 0) + "</td></tr>";
+        }).join("");
+        container.innerHTML = "<table><thead><tr><th>Pays</th><th>Membres</th><th>Leaders</th></tr></thead><tbody>" + body + "</tbody></table>";
+    }
+
+    function renderLeaderStats(rows) {
+        const container = document.getElementById("leaderStats");
+        if (!Array.isArray(rows) || !rows.length) {
+            container.textContent = "Aucun leader enregistré.";
+            return;
+        }
+        const names = new Intl.DisplayNames(["fr"], { type: "region" });
+        const body = rows.map((row) => {
+            const code = String(row.country_code || "UN").toUpperCase();
+            const country = code === "UN" ? "Non renseigné" : (names.of(code) || code);
+            return "<tr><td>" + escapeHtml(row.email || "Leader") + "</td><td>" +
+                escapeHtml(country) + "</td><td>" + Number(row.direct_members || 0) +
+                "</td><td>" + Number(row.active_direct_members || 0) + "</td></tr>";
+        }).join("");
+        container.innerHTML = "<table><thead><tr><th>Leader</th><th>Pays</th><th>Filleuls directs</th><th>Actifs</th></tr></thead><tbody>" + body + "</tbody></table>";
+    }
+
     async function loadDashboardStats() {
 
         const statusMessage =
@@ -297,6 +343,9 @@
                 "opportunitiesCount"
             ).textContent =
                 data.opportunities ?? 0;
+
+            renderCountryStats(data.usersByCountry);
+            renderLeaderStats(data.leadersPerformance);
 
             statusMessage.textContent =
                 "Statistiques mises à jour.";
