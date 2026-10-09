@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0e11">
+<title>Opportunités — Point Focal Admin</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0e11;--surface:#1e2329;--border:#2b3139;--yellow:#f0b90b;--text:#eaecef;--muted:#a7b0ba;--red:#ff7588;--green:#58d6a5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:0 0 82px;background:var(--bg);color:var(--text);font:16px Arial,sans-serif}
+header{padding:20px 16px;text-align:center;background:var(--surface);border-bottom:1px solid var(--border)}h1{margin:0;color:var(--yellow);font-size:24px}header p{margin:8px 0 0;color:var(--muted)}
+main{width:min(100%,920px);margin:auto;padding:16px}.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+button{min-height:44px;border:0;border-radius:9px;padding:11px 15px;background:var(--yellow);color:#111;font-weight:700;cursor:pointer}button.secondary{background:#2b3139;color:var(--text);border:1px solid #3b424c}button:disabled{opacity:.6;cursor:wait}
+#pageMessage{min-height:24px;margin:8px 0 12px;color:var(--muted)}#opportunitiesList{display:grid;gap:12px}
+.opp-card{padding:16px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}.opp-title{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}.opp-title h2{margin:0;font-size:18px}
+.badge{border-radius:999px;padding:5px 9px;background:#303740;font-size:12px;font-weight:700}.badge.active{color:var(--green)}.badge.inactive,.badge.draft{color:var(--yellow)}
+.slug{margin:7px 0 12px;color:var(--muted);font-size:13px;overflow-wrap:anywhere}.details{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:12px 0}.detail{padding:9px;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.empty,.error{padding:20px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--muted);text-align:center}.error{color:var(--red)}
+dialog{width:min(calc(100% - 24px),520px);max-height:90vh;overflow:auto;padding:0;border:1px solid #3b424c;border-radius:14px;background:var(--surface);color:var(--text)}dialog::backdrop{background:#000b}
+.dialog-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--border)}.dialog-header h2{margin:0;color:var(--yellow);font-size:20px}
+form{padding:16px}label{display:block;margin:0 0 6px;color:var(--muted);font-size:14px}.field{margin-bottom:14px}
+input,select{width:100%;min-height:44px;padding:10px;border:1px solid #3b424c;border-radius:8px;background:#111418;color:var(--text);font:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.check{display:flex;align-items:center;gap:10px;min-height:42px}.check input{width:20px;min-height:20px}
+#formMessage{min-height:22px;margin:10px 0;color:var(--red)}.menu{position:fixed;z-index:5;bottom:0;left:0;width:100%;display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-top:1px solid var(--border)}
+.menu a{padding:12px 4px;text-align:center;color:var(--text);text-decoration:none;font-size:12px}.menu a.active{color:var(--yellow)}
+@media(max-width:480px){header{text-align:left}main{padding:12px}.row{grid-template-columns:1fr}}
+</style>
+<script src="admin-20261009-v3.js"></script>
+</head>
+<body>
+<header><h1>Opportunités</h1><p>Gérez le registre qui alimente le parcours POINT FOCAL.</p></header>
+<main>
+  <div class="toolbar"><div>Les données affichées viennent du registre serveur.</div><button id="openAddModalButton" type="button">Ajouter</button></div>
+  <p id="pageMessage" role="status" aria-live="polite">Chargement du registre…</p>
+  <section id="opportunitiesList" aria-live="polite"></section>
+</main>
+<dialog id="opportunityModal" aria-labelledby="modalTitle">
+  <div class="dialog-header"><h2 id="modalTitle">Ajouter une opportunité</h2><button id="closeModalButton" class="secondary" type="button">Fermer</button></div>
+  <form id="opportunityForm">
+    <div class="field"><label for="opportunityName">Nom</label><input id="opportunityName" required maxlength="120"></div>
+    <div class="field"><label for="opportunitySlug">Slug unique</label><input id="opportunitySlug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" maxlength="120" autocomplete="off"></div>
+    <div class="row">
+      <div class="field"><label for="opportunityStatus">Statut</label><select id="opportunityStatus"><option value="DRAFT">Brouillon</option><option value="INACTIVE">Inactive</option><option value="ACTIVE">Active</option></select></div>
+      <div class="field"><label for="opportunityPosition">Position</label><input id="opportunityPosition" type="number" min="1" step="1" required></div>
+    </div>
+    <div class="field"><label for="opportunityPriority">Priorité</label><input id="opportunityPriority" type="number" min="1" step="1" value="1" required></div>
+    <div class="check"><input id="isEntry" type="checkbox"><label for="isEntry">Opportunité d’entrée</label></div>
+    <div class="check"><input id="canGenerateLink" type="checkbox"><label for="canGenerateLink">Peut générer un lien Point Focal</label></div>
+    <div class="check"><input id="requiresUserLink" type="checkbox" checked><label for="requiresUserLink">Exige le lien personnel de l’utilisateur</label></div>
+    <div class="check"><input id="rollupEnabled" type="checkbox"><label for="rollupEnabled">Roll-up activé</label></div>
+    <p id="formMessage" role="status" aria-live="polite"></p>
+    <button id="submitButton" type="submit">Enregistrer</button>
+  </form>
+</dialog>
+<nav class="menu" aria-label="Navigation administrateur">
+  <a href="dashboard-admin-20261009-v3.html">📊<br>Tableau</a>
+  <a href="users-admin-20261009-v3.html">👥<br>Utilisateurs</a>
+  <a class="active" href="opportunities-admin-20261009-v3.html">🎯<br>Opportunités</a>
+  <a href="settings-admin-20261009-v3.html">⚙️<br>Compte</a>
+</nav>
+<script>
+protectAdminPage();
+const list=document.getElementById("opportunitiesList");
+const pageMessage=document.getElementById("pageMessage");
+const modal=document.getElementById("opportunityModal");
+const form=document.getElementById("opportunityForm");
+const formMessage=document.getElementById("formMessage");
+let opportunities=[];
+let editingId=null;
+const esc=(value)=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+const slugify=(value)=>String(value||"").normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function renderOpportunities(){
+  if(!opportunities.length){list.innerHTML='<p class="empty">Aucune opportunité enregistrée.</p>';return;}
+  list.innerHTML=opportunities.map((opp)=>{
+    const status=String(opp.status||"UNKNOWN").toUpperCase();
+    return '<article class="opp-card" data-id="'+esc(opp.id)+'">'+
+      '<div class="opp-title"><h2>'+esc(opp.name||"Sans nom")+'</h2><span class="badge '+status.toLowerCase()+'">'+esc(status)+'</span></div>'+
+      '<p class="slug">'+esc(opp.slug||"Slug non renseigné")+' · ID '+esc(opp.id)+'</p>'+
+      '<div class="details">'+
+      '<div class="detail">Position : '+esc(opp.position??"—")+'</div>'+
+      '<div class="detail">Priorité : '+esc(opp.priority??"—")+'</div>'+
+      '<div class="detail">Entrée : '+(opp.is_entry===true?"Oui":"Non")+'</div>'+
+      '<div class="detail">Génère un lien PF : '+(opp.generates_link===true?"Oui":"Non")+'</div>'+
+      '<div class="detail">Lien utilisateur exigé : '+(opp.requires_user_link!==false?"Oui":"Non")+'</div>'+
+      '<div class="detail">Roll-up : '+(opp.rollup_enabled===true?"Oui":"Non")+'</div></div>'+
+      '<div class="actions"><button class="secondary" type="button" data-action="edit">Modifier</button>'+
+      '<button type="button" data-action="toggle">'+(status==="ACTIVE"?"Désactiver":"Activer")+'</button></div></article>';
+  }).join("");
+}
+async function loadOpportunities(){
+  list.innerHTML='<p class="empty">Chargement…</p>';
+  pageMessage.textContent="Lecture du registre…";
+  try{
+    const data=await adminApiCall("/admin/opportunities");
+    if(!Array.isArray(data))throw new Error("Réponse inattendue du serveur.");
+    opportunities=data;renderOpportunities();
+    pageMessage.textContent=data.length+" opportunité(s) chargée(s).";
+    pageMessage.style.color="#58d6a5";
+  }catch(error){
+    opportunities=[];list.innerHTML="";
+    const box=document.createElement("p");box.className="error";box.textContent=error.message||"Impossible de lire le registre.";
+    const retry=document.createElement("button");retry.type="button";retry.textContent="Réessayer";retry.addEventListener("click",loadOpportunities);
+    list.append(box,retry);pageMessage.textContent="Les données de démonstration sont désactivées.";pageMessage.style.color="#ff7588";
+  }
+}
+function openForm(opp=null){
+  editingId=opp?.id??null;form.reset();
+  document.getElementById("modalTitle").textContent=editingId?"Modifier l’opportunité":"Ajouter une opportunité";
+  document.getElementById("opportunityName").value=opp?.name||"";
+  document.getElementById("opportunitySlug").value=opp?.slug||"";
+  document.getElementById("opportunitySlug").dataset.edited=editingId?"true":"";
+  document.getElementById("opportunityStatus").value=String(opp?.status||"DRAFT").toUpperCase();
+  document.getElementById("opportunityPosition").value=opp?.position??(opportunities.length+1);
+  document.getElementById("opportunityPriority").value=opp?.priority??1;
+  document.getElementById("isEntry").checked=opp?.is_entry===true;
+  document.getElementById("canGenerateLink").checked=opp?.generates_link===true;
+  document.getElementById("requiresUserLink").checked=opp?.requires_user_link!==false;
+  document.getElementById("rollupEnabled").checked=opp?.rollup_enabled===true;
+  formMessage.textContent="";modal.showModal();
+}
+document.getElementById("opportunityName").addEventListener("input",(event)=>{
+  const slug=document.getElementById("opportunitySlug");
+  if(!slug.dataset.edited)slug.value=slugify(event.target.value);
+});
+document.getElementById("opportunitySlug").addEventListener("input",(event)=>{event.target.dataset.edited="true";});
+document.getElementById("openAddModalButton").addEventListener("click",()=>openForm());
+document.getElementById("closeModalButton").addEventListener("click",()=>modal.close());
+modal.addEventListener("click",(event)=>{if(event.target===modal)modal.close();});
+list.addEventListener("click",async(event)=>{
+  const button=event.target.closest("button[data-action]");if(!button)return;
+  const card=button.closest("[data-id]");
+  const opp=opportunities.find((item)=>String(item.id)===card?.dataset.id);if(!opp)return;
+  if(button.dataset.action==="edit"){openForm(opp);return;}
+  const nextStatus=String(opp.status||"").toUpperCase()==="ACTIVE"?"INACTIVE":"ACTIVE";
+  if(!window.confirm("Confirmer le passage de "+opp.name+" au statut "+nextStatus+" ?"))return;
+  button.disabled=true;pageMessage.textContent="Mise à jour en cours…";
+  try{
+    await adminApiCall("/admin/opportunities/"+encodeURIComponent(opp.id),{method:"PUT",body:JSON.stringify({status:nextStatus})});
+    await loadOpportunities();pageMessage.textContent="Statut enregistré.";
+  }catch(error){pageMessage.textContent=error.message||"Le statut n’a pas été enregistré.";pageMessage.style.color="#ff7588";button.disabled=false;}
+});
+form.addEventListener("submit",async(event)=>{
+  event.preventDefault();
+  const payload={
+    name:document.getElementById("opportunityName").value.trim(),
+    slug:document.getElementById("opportunitySlug").value.trim().toLowerCase(),
+    status:document.getElementById("opportunityStatus").value,
+    position:Number(document.getElementById("opportunityPosition").value),
+    priority:Number(document.getElementById("opportunityPriority").value),
+    isEntry:document.getElementById("isEntry").checked,
+    canGeneratePointFocalLink:document.getElementById("canGenerateLink").checked,
+    requiresUserLink:document.getElementById("requiresUserLink").checked,
+    rollupEnabled:document.getElementById("rollupEnabled").checked
+  };
+  const submit=document.getElementById("submitButton");submit.disabled=true;submit.textContent="Enregistrement…";formMessage.textContent="";
+  try{
+    const path=editingId?"/admin/opportunities/"+encodeURIComponent(editingId):"/admin/opportunities";
+    await adminApiCall(path,{method:editingId?"PUT":"POST",body:JSON.stringify(payload)});
+    const wasEditing=Boolean(editingId);modal.close();await loadOpportunities();
+    pageMessage.textContent=wasEditing?"Opportunité modifiée.":"Opportunité créée.";pageMessage.style.color="#58d6a5";
+  }catch(error){formMessage.textContent=error.message||"La modification n’a pas été enregistrée.";}
+  finally{submit.disabled=false;submit.textContent="Enregistrer";}
+});
+loadOpportunities();
+</script>
+</body>
+</html>
