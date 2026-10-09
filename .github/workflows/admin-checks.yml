@@ -22,3 +22,4 @@ jobs:
           node --check admin.js
           node --check login.js
           node --check admin-invitations.js
+          node --test tests/admin-dashboard.test.js
