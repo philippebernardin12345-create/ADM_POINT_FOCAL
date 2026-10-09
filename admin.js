@@ -71,14 +71,14 @@ async function adminApiCall(endpoint, options = {}) {
 function protectAdminPage() {
   const currentPage = window.location.pathname;
   if (!getAdminToken() && !currentPage.includes("login-admin.html")) {
-    window.location.replace("login-admin.html?release=20261009-admin-refresh2");
+    window.location.replace("login-admin-20261009-v3.html");
   }
 }
 
 function logoutAdmin() {
   removeAdminToken();
   removeAdminUser();
-  window.location.replace("login-admin.html?release=20261009-admin-refresh2");
+  window.location.replace("login-admin-20261009-v3.html");
 }
 
 function showAdminMessage(elementOrId, messageText, color = "#ff5b5b") {
