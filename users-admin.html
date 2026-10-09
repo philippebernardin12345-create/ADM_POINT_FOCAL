@@ -116,6 +116,7 @@
         .menu a.active {
             color: #f0b90b;
         }
+    .retry-button { display:block; width:calc(100% - 36px); max-width:320px; margin:16px auto; padding:12px; border:0; border-radius:8px; background:#f0b90b; color:#111; font-weight:700; cursor:pointer; }
     </style>
 
 </head>
@@ -139,13 +140,13 @@
     </div>
 
     <div class="menu">
-        <a href="dashboard-admin.html">📊<br>Tableau</a>
-        <a href="users-admin.html" class="active">👥<br>Utilisateurs</a>
-        <a href="opportunities-admin.html">🎯<br>Opportunités</a>
-        <a href="settings-admin.html">⚙️<br>Paramètres</a>
+        <a href="dashboard-admin.html?release=20261009-admin-refresh1">📊<br>Tableau</a>
+        <a href="users-admin.html?release=20261009-admin-refresh1" class="active">👥<br>Utilisateurs</a>
+        <a href="opportunities-admin.html?release=20261009-admin-refresh1">🎯<br>Opportunités</a>
+        <a href="settings-admin.html?release=20261009-admin-refresh1">⚙️<br>Paramètres</a>
     </div>
 
-    <script src="admin.js"></script>
+    <script src="admin.js?release=20261009-admin-refresh1"></script>
 
     <script>
         let allUsers = [];
@@ -217,42 +218,30 @@
             renderUsers(filteredUsers);
         }
 
-        // ============================================================
-        // 📥 CHARGEMENT DES UTILISATEURS AVEC SIMULATION
-        // ============================================================
-
         async function loadUsers() {
             const container = document.getElementById("usersContainer");
             const summary = document.getElementById("usersSummary");
+            container.innerHTML = '<div class="message">Chargement des utilisateurs…</div>';
+            summary.textContent = "Chargement des données réelles…";
 
-            // 🔧 DONNÉES SIMULÉES (affichage immédiat)
-            const simulatedUsers = [
-                { id: '1', email: 'alice@pointfocal.com', whatsapp: '+33612345678', is_leader: true, created_at: new Date().toISOString() },
-                { id: '2', email: 'bob@pointfocal.com', whatsapp: '+33623456789', is_leader: false, created_at: new Date().toISOString() },
-                { id: '3', email: 'carole@pointfocal.com', whatsapp: '+33634567890', is_leader: false, created_at: new Date().toISOString() },
-                { id: '4', email: 'david@pointfocal.com', whatsapp: '+33645678901', is_leader: true, created_at: new Date().toISOString() },
-                { id: '5', email: 'emma@pointfocal.com', whatsapp: '+33656789012', is_leader: false, created_at: new Date().toISOString() },
-                { id: '6', email: 'francois@pointfocal.com', whatsapp: '+33667890123', is_leader: false, created_at: new Date().toISOString() },
-                { id: '7', email: 'gabrielle@pointfocal.com', whatsapp: '+33678901234', is_leader: true, created_at: new Date().toISOString() },
-                { id: '8', email: 'hugo@pointfocal.com', whatsapp: '+33689012345', is_leader: false, created_at: new Date().toISOString() }
-            ];
-
-            // Afficher immédiatement les données simulées
-            allUsers = simulatedUsers;
-            renderUsers(allUsers);
-            summary.textContent = `${allUsers.length} utilisateur(s) (mode simulation)`;
-
-            // Essayer l'API en arrière-plan
             try {
-                const users = await adminApiCall("/admin/users");
-                if (Array.isArray(users) && users.length > 0) {
-                    allUsers = users;
-                    renderUsers(allUsers);
-                    summary.textContent = `${allUsers.length} utilisateur(s) chargé(s) depuis l'API`;
-                }
+                const users = await adminApiCall("/admin/users?page=1&limit=100");
+                if (!Array.isArray(users)) throw new Error("Réponse inattendue du serveur.");
+                allUsers = users;
+                renderUsers(allUsers);
             } catch (error) {
-                console.warn('⚠️ API lente ou hors ligne, données simulées conservées');
-                // Garder les données simulées
+                allUsers = [];
+                summary.textContent = "La liste n’a pas pu être chargée.";
+                container.innerHTML = "";
+                const message = document.createElement("div");
+                message.className = "message";
+                message.textContent = error.message || "Erreur de chargement.";
+                const retry = document.createElement("button");
+                retry.type = "button";
+                retry.className = "retry-button";
+                retry.textContent = "Réessayer";
+                retry.addEventListener("click", loadUsers);
+                container.append(message, retry);
             }
         }
 
