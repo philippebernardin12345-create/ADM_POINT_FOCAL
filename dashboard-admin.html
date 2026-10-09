@@ -112,7 +112,7 @@
             border-top: 1px solid #2b3139;
 
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
         }
 
         .menu a {
@@ -149,6 +149,7 @@
     Administration générale de Point Focal
 </p>
 
+<button class="admin-action-button" type="button" id="logoutButton">Se déconnecter</button>
 
     </div>
 
@@ -229,7 +230,7 @@
         </div>
     </div>
 
-    <section class="analytics-grid" aria-label="Statistiques détaillées">
+    <section class="analytics-grid" id="statistics" aria-label="Statistiques détaillées">
       <article class="analytics-card">
         <h2>Utilisateurs par pays</h2>
         <div id="countryStats">Chargement…</div>
@@ -254,6 +255,11 @@
             Tableau
         </a>
 
+        <a href="#statistics">
+            📈<br>
+            Statistiques
+        </a>
+
         <a href="users-admin-20261009-v3.html">
             👥<br>
             Utilisateurs
@@ -276,6 +282,7 @@
 
 <script>
     protectAdminPage();
+    document.getElementById("logoutButton").addEventListener("click", logoutAdmin);
 
     function renderCountryStats(rows) {
         const container = document.getElementById("countryStats");
